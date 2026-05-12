@@ -191,7 +191,7 @@ export default function BanChecker() {
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               <a
-                href="https://github.com/e1n7/Ban-Checker"
+                href="https://github.com/e1n7/Brainly-Ban-Checker"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline font-medium"
