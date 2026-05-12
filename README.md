@@ -56,7 +56,3 @@ npm run preview
 - Vite may choose an alternate port if `5173` is already in use.
 - The app currently loads banned word data from `src/lib/bannedWords.json`.
 - If you need to add or update banned words, edit the JSON arrays directly.
-
-## License
-
-This project is provided without warranty. Use at your own risk.
