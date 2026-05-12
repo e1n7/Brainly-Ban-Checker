@@ -1,5 +1,5 @@
 import React from 'react';
-import BanChecker from './pages/BanChecker';
+import BanChecker from './Pages/BanChecker';
 
 export default function App() {
   return <BanChecker />;
