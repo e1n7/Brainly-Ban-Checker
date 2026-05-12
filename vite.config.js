@@ -4,7 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/Ban-Checker/', // Required for GitHub Pages!
+  base: '/Brainly-Ban-Checker/', // Updated to match your repo name exactly
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
