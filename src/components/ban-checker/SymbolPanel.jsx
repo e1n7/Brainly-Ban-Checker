@@ -123,7 +123,7 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
             </div>
 
             {/* Symbol grid */}
-            <div className="p-2 sm:p-3 grid grid-cols-4 sm:grid-cols-5 gap-1.5 sm:gap-2 overflow-y-auto flex-1">
+            <div className="p-2 sm:p-3 grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] gap-1.5 sm:gap-2 overflow-y-auto flex-1">
               {symbols.length > 0 ? (
                 symbols.map((s, i) => (
                   <button
