@@ -113,13 +113,13 @@ export default function BanChecker() {
     setSymbolPanelOpen((prev) => !prev);
   }, []);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background dark:from-slate-950 dark:via-slate-900/50 dark:to-slate-950 flex justify-center items-start p-3 sm:p-4 md:p-6">
+     return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background dark:from-slate-950 dark:via-slate-900/50 dark:to-slate-950 flex justify-center items-start pt-2 pb-6 px-3 sm:px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-2xl mt-2 sm:mt-4 md:mt-8"
+        className="w-full max-w-2xl mt-2"
       >
         {/* Main card */}
         <div className="bg-card/85 dark:bg-slate-900/90 backdrop-blur-lg border border-border/60 dark:border-slate-700/60 rounded-3xl shadow-xl p-4 sm:p-6 md:p-8">
