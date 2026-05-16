@@ -71,9 +71,13 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
   // Fixed toggle click handler
   const handleFabClick = useCallback((e) => {
     if (!onClose) return;
-    onClose(!isOpen);
+    
+    if (isOpen) {
+      onClose(false);
+    } else {
+      onClose(true);
+    }
   }, [isOpen, onClose]);
-
   const symbols = getFilteredSymbols();
 
   return (
