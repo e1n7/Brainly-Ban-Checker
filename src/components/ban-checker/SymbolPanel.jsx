@@ -137,8 +137,8 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
               />
             </div>
 
-            {/* FIXED MOBIL GRID - Added explicit item sizes and alignment to prevent distortion */}
-            <div className="p-2 sm:p-3 grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] gap-1.5 sm:gap-2 overflow-y-auto flex-1 justify-items-center content-start">
+             {/* FIXED MOBILE GRID - Uses a balanced grid template with aspect-ratio management */}
+            <div className="p-2 sm:p-3 grid grid-cols-5 gap-2 overflow-y-auto flex-1 content-start">
               {symbols.length > 0 ? (
                 symbols.map((s, i) => (
                   <button
@@ -146,7 +146,7 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
                     title={`Click to copy, double-click to insert (base: ${s.base})`}
                     onClick={() => handleCopy(s.char)}
                     onDoubleClick={() => handleDoubleClick(s.char)}
-                    className="w-11 h-11 flex items-center justify-center rounded-lg border border-border dark:border-slate-600 bg-secondary/30 dark:bg-slate-700/40 text-base sm:text-lg hover:bg-primary/10 dark:hover:bg-slate-600 hover:border-primary dark:hover:border-slate-500 hover:text-primary dark:hover:text-slate-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer select-none"
+                    className="w-full aspect-square flex items-center justify-center rounded-xl border border-border dark:border-slate-700 bg-secondary/30 dark:bg-slate-800/40 text-base sm:text-lg hover:bg-primary/10 dark:hover:bg-slate-700 hover:border-primary dark:hover:border-slate-500 hover:text-primary dark:hover:text-slate-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer select-none"
                   >
                     {s.char}
                   </button>
