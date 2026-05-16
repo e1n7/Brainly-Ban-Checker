@@ -4,7 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/Brainly-Ban-Checker/', // Updated to match your repo name exactly
+  base: '', // Changed from '/Brainly-Ban-Checker/' to '' so it works on any hosting platform without needing to adjust the base path
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
