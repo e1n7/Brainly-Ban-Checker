@@ -70,11 +70,9 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
     }
   };
 
-  const handleFabClick = useCallback((e) => {
-    e.preventDefault();
-    if (onClose) {
-      onClose(!isOpen);
-    }
+   const handleFabClick = useCallback(() => {
+    if (!onClose) return;
+    onClose(isOpen ? false : true);
   }, [isOpen, onClose]);
 
   return (
@@ -82,11 +80,11 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
       {/* FAB button */}
       <button
         onClick={handleFabClick}
-        className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center z-50 min-h-[44px] min-w-[44px] cursor-pointer"
+        className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center z-50 min-h-[44px] min-w-[44px]"
         aria-label="Toggle symbol finder"
         type="button"
       >
-        {isOpen ? <X className="w-5 sm:w-6 h-5 sm:h-6 pointer-events-none" /> : <Lightbulb className="w-5 sm:w-6 h-5 sm:h-6 pointer-events-none" />}
+        {isOpen ? <X className="w-5 sm:w-6 h-5 sm:h-6" /> : <Lightbulb className="w-5 sm:w-6 h-5 sm:h-6" />}
       </button>
 
       {/* Panel */}
