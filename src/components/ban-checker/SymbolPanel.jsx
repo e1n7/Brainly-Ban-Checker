@@ -68,14 +68,10 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
     }
   };
 
-// Explicitly close or open based on current panel visibility state
+// Safe toggle function that will not cause a white screen crash
   const handleFabClick = useCallback(() => {
-    if (!onClose) return;
-    
-    if (isOpen) {
-      onClose(false); // If panel is visible, clicking the circle forces it shut
-    } else {
-      onClose(true);  // If panel is hidden, clicking the circle opens it up
+    if (onClose) {
+      onClose(!isOpen);
     }
   }, [isOpen, onClose]);
 
