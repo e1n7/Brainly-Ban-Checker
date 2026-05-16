@@ -70,7 +70,7 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
     }
   };
 
-   const handleFabClick = useCallback(() => {
+  const handleFabClick = useCallback(() => {
     if (!onClose) return;
     onClose(isOpen ? false : true);
   }, [isOpen, onClose]);
