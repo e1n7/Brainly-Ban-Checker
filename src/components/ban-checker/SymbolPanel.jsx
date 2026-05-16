@@ -29,12 +29,10 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
   const getFilteredSymbols = useCallback(() => {
     const query = search.toLowerCase().trim();
     if (!query) {
-      // Return all symbols
       return Object.entries(bannedWordsData.symbolMap).flatMap(([base, chars]) =>
         chars.map((char) => ({ char, base }))
       );
     }
-    // Filter by base letter
     const matchedEntries = Object.entries(bannedWordsData.symbolMap).filter(([base]) =>
       base.includes(query)
     );
@@ -70,24 +68,31 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
     }
   };
 
-  const handleFabClick = useCallback(() => {
+  // Fixed toggle click handler
+  const handleFabClick = useCallback((e) => {
     if (!onClose) return;
-    onClose(isOpen ? false : true);
+    onClose(!isOpen);
   }, [isOpen, onClose]);
+
+  const symbols = getFilteredSymbols();
 
   return (
     <>
-      {/* FAB button */}
+      {/* FAB button wrapper - covers the entire blue circle zone */}
       <button
         onClick={handleFabClick}
-        className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center z-50 min-h-[44px] min-w-[44px]"
+        className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center z-50 min-h-[44px] min-w-[44px] cursor-pointer"
         aria-label="Toggle symbol finder"
         type="button"
       >
-        {isOpen ? <X className="w-5 sm:w-6 h-5 sm:h-6" /> : <Lightbulb className="w-5 sm:w-6 h-5 sm:h-6" />}
+        {isOpen ? (
+          <X className="w-5 sm:w-6 h-5 sm:h-6 pointer-events-none" />
+        ) : (
+          <Lightbulb className="w-5 sm:w-6 h-5 sm:h-6 pointer-events-none" />
+        )}
       </button>
 
-      {/* Panel */}
+      {/* Panel overlay block */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -120,7 +125,7 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
               />
             </div>
 
-            {/* Symbol grid */}
+            {/* Symbol grid layout - configured with responsive auto-fill attributes */}
             <div className="p-2 sm:p-3 grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] gap-1.5 sm:gap-2 overflow-y-auto flex-1">
               {symbols.length > 0 ? (
                 symbols.map((s, i) => (
@@ -135,13 +140,13 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
                   </button>
                 ))
               ) : (
-                <div className="col-span-4 sm:col-span-5 text-center py-3 sm:py-5 text-xs sm:text-sm text-muted-foreground dark:text-slate-400">
+                <div className="col-span-full text-center py-3 sm:py-5 text-xs sm:text-sm text-muted-foreground dark:text-slate-400">
                   No symbols found for "{search}"
                 </div>
               )}
             </div>
 
-            {/* Footer */}
+            {/* Footer layout */}
             <div className="px-2 sm:px-3 py-2 sm:py-2.5 bg-secondary/50 dark:bg-slate-800/60 border-t border-border dark:border-slate-700 text-center">
               <p className="text-xs text-muted-foreground dark:text-slate-400">
                 Click to copy • Double-click to insert
