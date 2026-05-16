@@ -68,12 +68,14 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
     }
   };
 
-// Safe toggle function that will not cause a white screen crash
   const handleFabClick = useCallback(() => {
     if (onClose) {
       onClose(!isOpen);
     }
   }, [isOpen, onClose]);
+
+  // RESTORED VARIABLE - This prevents the white screen crash
+  const symbols = getFilteredSymbols();
 
   return (
     <>
