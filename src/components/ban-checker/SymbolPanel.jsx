@@ -110,7 +110,7 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 w-[calc(100vw-2rem)] sm:w-80 bg-card dark:bg-slate-900 border border-border dark:border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[60vh] sm:max-h-[70vh]"
+            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 w-72 sm:w-80 bg-card dark:bg-slate-900 border border-border dark:border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[60vh] sm:max-h-[70vh]"
           >
             {/* Header */}
             <div className="p-3 sm:p-4 bg-secondary/50 dark:bg-slate-800/60 border-b border-border dark:border-slate-700">
@@ -138,7 +138,7 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
             </div>
 
              {/* FIXED MOBILE GRID - Dense 6-column layout makes individual buttons smaller */}
-            <div className="p-2 sm:p-3 grid grid-cols-6 gap-2 overflow-y-auto flex-1 content-start">
+            <div className="p-2 sm:p-3 grid grid-cols-5 gap-2 overflow-y-auto flex-1 content-start">
               {symbols.length > 0 ? (
                 symbols.map((s, i) => (
                   <button
