@@ -137,8 +137,8 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
               />
             </div>
 
-             {/* FIXED MOBILE GRID - Uses a balanced grid template with aspect-ratio management */}
-            <div className="p-2 sm:p-3 grid grid-cols-5 gap-2 overflow-y-auto flex-1 content-start">
+             {/* FIXED MOBILE GRID - Dense 6-column layout makes individual buttons smaller */}
+            <div className="p-2 sm:p-3 grid grid-cols-6 gap-2 overflow-y-auto flex-1 content-start">
               {symbols.length > 0 ? (
                 symbols.map((s, i) => (
                   <button
