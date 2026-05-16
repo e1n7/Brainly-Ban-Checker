@@ -68,21 +68,20 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
     }
   };
 
-  // Fixed toggle click handler
-  const handleFabClick = useCallback((e) => {
+// Explicitly close or open based on current panel visibility state
+  const handleFabClick = useCallback(() => {
     if (!onClose) return;
     
     if (isOpen) {
-      onClose(false);
+      onClose(false); // If panel is visible, clicking the circle forces it shut
     } else {
-      onClose(true);
+      onClose(true);  // If panel is hidden, clicking the circle opens it up
     }
   }, [isOpen, onClose]);
-  const symbols = getFilteredSymbols();
 
   return (
     <>
-      {/* FAB button wrapper - covers the entire blue circle zone */}
+       {/* FAB button */}
       <button
         onClick={handleFabClick}
         className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center z-50 min-h-[44px] min-w-[44px] cursor-pointer"
