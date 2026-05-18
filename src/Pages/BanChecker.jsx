@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Search, RotateCcw } from "lucide-react";
-import { motion } from "framer-motion";
+import { Search, RotateCcw, HelpCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import bannedWordsData from "@/lib/bannedWords.json";
 import { analyzeContent } from "@/lib/banChecker";
 import Header from "@/components/ban-checker/Header";
@@ -23,6 +23,7 @@ export default function BanChecker() {
   const [symbolSearchResetKey, setSymbolSearchResetKey] = useState(0);
   const [toastMessage, setToastMessage] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const textareaRef = useRef(null);
 
   const showToast = useCallback((message) => {
@@ -108,13 +109,20 @@ export default function BanChecker() {
     }, 0);
   }, [text]);
 
-  // Toggle symbol panel from FAB
-  const handleSymbolToggle = useCallback(() => {
-    setSymbolPanelOpen((prev) => !prev);
-  }, []);
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background dark:from-slate-950 dark:via-slate-900/50 dark:to-slate-950 flex justify-center items-start pt-2 pb-6 px-3 sm:px-4 relative">
+      
+      {/* Circle Info Button (Top Right Floating or Absolute) */}
+      <div className="fixed top-4 right-4 z-40">
+        <button
+          onClick={() => setInfoOpen(true)}
+          className="p-2.5 rounded-full bg-card/80 dark:bg-slate-900/80 backdrop-blur border border-border/60 dark:border-slate-700/60 shadow-md text-muted-foreground hover:text-foreground hover:shadow-lg transition-all duration-200"
+          title="How to use & FAQ"
+        >
+          <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
+      </div>
 
-     return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background dark:from-slate-950 dark:via-slate-900/50 dark:to-slate-950 flex justify-center items-start pt-2 pb-6 px-3 sm:px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -202,6 +210,72 @@ export default function BanChecker() {
           </div>
         </div>
       </motion.div>
+
+      {/* Info Modal Backdrop and Content */}
+      <AnimatePresence>
+        {infoOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setInfoOpen(false)}
+              className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
+            />
+            
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-card dark:bg-slate-900 border border-border dark:border-slate-700 rounded-3xl shadow-2xl p-5 sm:p-7 z-10 text-left font-inter"
+            >
+              <div className="flex justify-between items-center mb-5 border-b border-border dark:border-slate-800 pb-3">
+                <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-primary" /> App Information
+                </h2>
+                <button
+                  onClick={() => setInfoOpen(false)}
+                  className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all"
+                >
+                  Close
+                </button>
+              </div>
+
+              {/* How to Use */}
+              <section className="mb-6">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">- How to Use the Ban Checker?</h3>
+                <ol className="list-decimal list-inside space-y-2 text-xs sm:text-sm text-muted-foreground dark:text-slate-400">
+                  <li>Select the platform version you want to post your content (<span className="font-semibold text-foreground">Brainly.ph</span> or <span className="font-semibold text-foreground">Brainly.com</span>).</li>
+                  <li>Paste your text, question, or answer inside the input box.</li>
+                  <li>Click the <span className="font-semibold text-foreground">Analyze Content</span> button.</li>
+                  <li>The system highlights flagged or sensitive words that might trigger an account ban.</li>
+                </ol>
+              </section>
+
+              {/* FAQ */}
+              <section>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">- Frequently Asked Questions (FAQ)</h3>
+                <div className="space-y-4 text-xs sm:text-sm">
+                  <div>
+                    <h4 className="font-semibold text-foreground">Q - Why are certain words banned on Brainly?</h4>
+                    <p className="text-muted-foreground dark:text-slate-400 mt-1">The platform uses automated filters to keep the community safe, educational, and family-friendly. Sometimes, innocent phrases get flagged accidentally due to overlapping letters between words.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">Q - Is my text data safe here?</h4>
+                    <p className="text-muted-foreground dark:text-slate-400 mt-1">Yes, completely. This application processes everything locally within your browser. There is no database, no registration required, and absolutely no data collection on our backend.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">Q - What should I do if the tool finds a flagged word?</h4>
+                    <p className="text-muted-foreground dark:text-slate-400 mt-1">You can replace the flagged word with a synonym or rephrase your sentence to bypass the automated filter before posting it on the official website.</p>
+                  </div>
+                </div>
+              </section>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {toastVisible && (
         <div className="fixed bottom-6 left-1/2 z-50 w-[min(90vw,28rem)] -translate-x-1/2 rounded-2xl bg-slate-950/95 px-4 py-3 text-sm text-white shadow-2xl backdrop-blur-md border border-white/10 text-center">
