@@ -109,28 +109,29 @@ export default function BanChecker() {
     }, 0);
   }, [text]);
 
-  return (
+return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background dark:from-slate-950 dark:via-slate-900/50 dark:to-slate-950 flex justify-center items-start pt-2 pb-6 px-3 sm:px-4 relative">
       
-      {/* Circle Info Button (Top Right Floating or Absolute) */}
-      <div className="fixed top-4 right-4 z-40">
-        <button
-          onClick={() => setInfoOpen(true)}
-          className="p-2.5 rounded-full bg-card/80 dark:bg-slate-900/80 backdrop-blur border border-border/60 dark:border-slate-700/60 shadow-md text-muted-foreground hover:text-foreground hover:shadow-lg transition-all duration-200"
-          title="How to use & FAQ"
-        >
-          <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-        </button>
-      </div>
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-2xl mt-2"
       >
-        {/* Main card */}
-        <div className="bg-card/85 dark:bg-slate-900/90 backdrop-blur-lg border border-border/60 dark:border-slate-700/60 rounded-3xl shadow-xl p-4 sm:p-6 md:p-8">
+        {/* Main card - Added 'relative' class here */}
+        <div className="relative bg-card/85 dark:bg-slate-900/90 backdrop-blur-lg border border-border/60 dark:border-slate-700/60 rounded-3xl shadow-xl p-4 sm:p-6 md:p-8">
+          
+          {/* Question Mark Icon Button - Positioned at the upper left side */}
+          <div className="absolute top-4 left-4 z-10">
+            <button
+              onClick={() => setInfoOpen(true)}
+              className="p-2.5 rounded-full bg-card/80 dark:bg-slate-900/80 backdrop-blur border border-border/60 dark:border-slate-700/60 shadow-md text-muted-foreground hover:text-foreground hover:shadow-lg transition-all duration-200"
+              title="How to use & FAQ"
+            >
+              <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </div>
+
           <Header isDark={isDark} onToggleTheme={handleToggleTheme} />
 
           {/* Input section */} 
