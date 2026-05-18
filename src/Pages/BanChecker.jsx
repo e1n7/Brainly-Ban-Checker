@@ -133,7 +133,7 @@ export default function BanChecker() {
         <div className="bg-card/85 dark:bg-slate-900/90 backdrop-blur-lg border border-border/60 dark:border-slate-700/60 rounded-3xl shadow-xl p-4 sm:p-6 md:p-8">
           <Header isDark={isDark} onToggleTheme={handleToggleTheme} />
 
-          {/* Input section */}
+          {/* Input section */} 
           <div className="mb-5">
             <div className="flex items-center justify-between mb-2">
               <label
