@@ -125,7 +125,7 @@ return (
           <div className="absolute top-4 left-4 z-10">
             <button
               onClick={() => setInfoOpen(true)}
-              className="p-2.5 rounded-full bg-card/80 dark:bg-slate-900/80 backdrop-blur border border-border/60 dark:border-slate-700/60 shadow-md text-muted-foreground hover:text-foreground hover:shadow-lg transition-all duration-200"
+              className="p-1 text-muted-foreground hover:text-foreground transition-all duration-200"
               title="How to use & FAQ"
             >
               <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -269,7 +269,7 @@ return (
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground">Q - What should I do if the tool finds a flagged word?</h4>
-                    <p className="text-muted-foreground dark:text-slate-400 mt-1">You can replace the flagged word with a synonym or rephrase your sentence to bypass the automated filter before posting it on the official website.</p>
+                    <p className="text-muted-foreground dark:text-slate-400 mt-1">You can use our built-in <span className="font-semibold text-foreground">Symbol Finder</span> tool (the lightbulb icon button at the bottom right) to switch regular letters with special characters (like changing <span className="font-semibold text-foreground">a</span> to <span className="font-semibold text-foreground">à</span>) to bypass the automated filters.</p>
                   </div>
                 </div>
               </section>
