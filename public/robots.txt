@@ -1,0 +1,11 @@
+User-agent: *
+
+Allow: /
+
+Disallow: /api/
+
+Disallow: /.vscode/
+Disallow: /node_modules/
+Disallow: /dist/
+
+# Sitemap: https://brainly-ban-checker.vercel.app/sitemap.xml
