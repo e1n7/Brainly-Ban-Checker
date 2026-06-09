@@ -74,7 +74,7 @@ export default function ResultsDisplay({ result }) {
               Preview
             </label>
             <div
-              className="p-3 sm:p-5 bg-card dark:bg-slate-800/50 border-2 border-border dark:border-slate-700 rounded-2xl min-h-[80px] sm:min-h-[100px] text-xs sm:text-[0.95rem] leading-relaxed whitespace-pre-wrap break-words overflow-x-auto\"
+              className="p-3 sm:p-5 bg-card dark:bg-slate-800/50 border-2 border-border dark:border-slate-700 rounded-2xl min-h-[80px] sm:min-h-[100px] text-xs sm:text-[0.95rem] leading-relaxed whitespace-pre-wrap break-words overflow-x-auto"
               dangerouslySetInnerHTML={{ __html: result.highlightedHTML }}
             />
           </div>
