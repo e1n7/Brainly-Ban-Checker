@@ -33,3 +33,4 @@ export function analyzeContent(text, bannedWords) {
 
     return { found: foundWords, highlightedHTML };
 }
+
