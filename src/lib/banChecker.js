@@ -58,7 +58,7 @@ export function analyzeContent(text, bannedWords) {
                     filtered[overlappingIndex] = replacement;
                 }
             } else {
-                filtered.push(replacement);
+                filtered.push(replacement); 
             }
         }
         
