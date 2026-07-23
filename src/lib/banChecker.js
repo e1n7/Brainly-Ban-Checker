@@ -3,7 +3,7 @@ function escapeRegExp(string) {
 }
 
 export function analyzeContent(text, bannedWords) {
-    if (!text.trim()) {
+    if (!text || (typeof text === 'string' && !text.trim())) {
         return { found: [], highlightedHTML: "" };
     }
 
@@ -18,7 +18,15 @@ export function analyzeContent(text, bannedWords) {
     });
 
     // Build highlighted preview
-    let highlightedHTML = text;
+    // We use a simple replacement for the text version.
+    // If the input was HTML, we'll need to handle it differently in the future,
+    // but for now, we'll convert the rich text to HTML with highlights.
+    let highlightedHTML = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>");
+
     if (foundWords.length > 0) {
         // Sort by length descending so longer phrases are highlighted first
         const sorted = [...foundWords].sort((a, b) => b.length - a.length);
@@ -70,11 +78,18 @@ export function analyzeContent(text, bannedWords) {
         for (const replacement of filtered) {
             result = 
                 result.slice(0, replacement.start) +
-                `<mark class="highlight">${result.slice(replacement.start, replacement.end)}</mark>` +
+                `___MARK_START___${result.slice(replacement.start, replacement.end)}___MARK_END___` +
                 result.slice(replacement.end);
         }
         
-        highlightedHTML = result;
+        // Now escape and then replace the markers with real HTML
+        highlightedHTML = result
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\n/g, "<br>")
+            .replace(/___MARK_START___/g, '<mark class="highlight">')
+            .replace(/___MARK_END___/g, '</mark>');
     }
 
     return { found: foundWords, highlightedHTML };

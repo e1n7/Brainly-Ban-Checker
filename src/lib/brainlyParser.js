@@ -57,35 +57,67 @@ function extractAnswerContent(html) {
     ".answer-content",
   ];
 
+  let answerContent = "";
   for (const selector of selectors) {
     const answerElement = temp.querySelector(selector);
     if (answerElement && answerElement.textContent.trim().length > 0) {
-      return answerElement.innerHTML;
+      answerContent = answerElement.innerHTML;
+      break;
     }
   }
 
-  // Fallback: if no specific container found, try to extract the main content
-  // Remove common non-content elements
-  const nonContentSelectors = [
-    ".author-info",
-    ".user-info",
-    ".rating",
-    ".comments",
-    ".advertisement",
-    ".ad",
-    "[class*='placeholder']",
-    "[class*='loading']",
-    ".button",
-    ".btn",
-    ".footer",
-    ".header",
-  ];
+  if (!answerContent) {
+    // Fallback: if no specific container found, try to extract the main content
+    // Remove common non-content elements
+    const nonContentSelectors = [
+      ".author-info",
+      ".user-info",
+      ".rating",
+      ".comments",
+      ".advertisement",
+      ".ad",
+      "[class*='placeholder']",
+      "[class*='loading']",
+      ".button",
+      ".btn",
+      ".footer",
+      ".header",
+    ];
 
-  nonContentSelectors.forEach((selector) => {
-    temp.querySelectorAll(selector).forEach((el) => el.remove());
-  });
+    nonContentSelectors.forEach((selector) => {
+      temp.querySelectorAll(selector).forEach((el) => el.remove());
+    });
+    answerContent = temp.innerHTML;
+  }
 
-  return temp.innerHTML;
+  // Re-parse to clean up formatting but keep allowed tags
+  const cleanTemp = document.createElement("div");
+  cleanTemp.innerHTML = answerContent;
+
+  const allowedTags = ["p", "br", "strong", "b", "em", "i", "u", "sup", "sub", "ul", "ol", "li", "blockquote", "a"];
+  
+  function cleanNode(node) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const tag = node.tagName.toLowerCase();
+      if (!allowedTags.includes(tag)) {
+        // Replace tag with its children
+        while (node.firstChild) {
+          node.parentNode.insertBefore(node.firstChild, node);
+        }
+        node.parentNode.removeChild(node);
+      } else {
+        // Keep tag but remove all attributes except href for links
+        Array.from(node.attributes).forEach(attr => {
+          if (tag === 'a' && attr.name === 'href') return;
+          node.removeAttribute(attr.name);
+        });
+        Array.from(node.childNodes).forEach(cleanNode);
+      }
+    }
+  }
+
+  Array.from(cleanTemp.childNodes).forEach(cleanNode);
+  return cleanTemp.innerHTML;
 }
 
 /**
@@ -198,14 +230,13 @@ function htmlToRichText(html) {
     listNode.childNodes.forEach((child) => {
       if (child.tagName && child.tagName.toLowerCase() === "li") {
         const marker = isOrdered ? `${index}. ` : "• ";
-        result += marker;
-        result += child.textContent.trim();
-        result += "\n";
+        result += "\n" + marker;
+        result += processChildren(child);
         index++;
       }
     });
 
-    return result;
+    return result + "\n";
   }
 
   temp.childNodes.forEach((child) => {
@@ -251,12 +282,13 @@ export function parseBrainlyAnswer(html) {
       };
     }
 
-    // Convert to rich text
+    // Convert to rich text for analysis
     const richText = htmlToRichText(answerContent);
 
     return {
       text: richText,
       richText: richText,
+      html: answerContent, // Keep the original sanitized HTML for high-fidelity preview
       isValid: true,
       error: null,
     };
@@ -291,15 +323,10 @@ export function isHTML(input) {
 export function renderRichTextAsHTML(richText) {
   if (!richText || typeof richText !== "string") return "";
 
+  // For Brainly answers, we want to keep the HTML structure but sanitized
+  // However, the analyzeContent function expects plain text to highlight.
+  // So we'll keep the current approach but ensure it looks right.
   let html = richText;
-
-  // Escape HTML special characters first
-  html = html
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 
   // Convert newlines to <br> tags
   html = html.replace(/\n/g, "<br>");
