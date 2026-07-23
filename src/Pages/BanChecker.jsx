@@ -1,8 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Search, RotateCcw, HelpCircle } from "lucide-react";
+import { Search, RotateCcw, HelpCircle, Code } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import bannedWordsData from "@/lib/bannedWords.json";
 import { analyzeContent } from "@/lib/banChecker";
+import { parseBrainlyAnswer, isHTML, extractPlainText } from "@/lib/brainlyParser";
 import Header from "@/components/ban-checker/Header";
 import CountrySelector from "@/components/ban-checker/CountrySelector";
 import ResultsDisplay from "@/components/ban-checker/ResultsDisplay";
@@ -24,6 +25,8 @@ export default function BanChecker() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [inputMode, setInputMode] = useState("text"); // "text" or "html"
+  const [parseError, setParseError] = useState(null);
   const textareaRef = useRef(null);
 
   const showToast = useCallback((message) => {
@@ -70,23 +73,50 @@ export default function BanChecker() {
     }
 
     setIsAnalyzing(true);
+    setParseError(null);
 
     // Small delay for UX polish
     setTimeout(() => {
+      let contentToAnalyze = text;
+      
+      // If HTML mode, parse the Brainly answer first
+      if (inputMode === "html") {
+        const parsed = parseBrainlyAnswer(text);
+        if (!parsed.isValid) {
+          setParseError(parsed.error);
+          showToast(parsed.error || "Failed to parse HTML");
+          setIsAnalyzing(false);
+          return;
+        }
+        contentToAnalyze = parsed.text;
+      }
+      
       const wordList = getActiveWordList();
-      const res = analyzeContent(text, wordList);
+      const res = analyzeContent(contentToAnalyze, wordList);
       setResult(res);
       setIsAnalyzing(false);
     }, 400);
-  }, [text, getActiveWordList, showToast]);
+  }, [text, inputMode, getActiveWordList, showToast]);
 
   // Reset all fields
   const handleReset = useCallback(() => {
     setText("");
     setResult(null);
+    setParseError(null);
     setSymbolSearchResetKey((prev) => prev + 1);
     if (textareaRef.current) textareaRef.current.focus();
   }, []);
+
+  // Handle paste event to auto-detect HTML
+  const handlePaste = useCallback((e) => {
+    const pastedText = e.clipboardData.getData("text/html") || e.clipboardData.getData("text/plain");
+    if (pastedText && isHTML(pastedText)) {
+      setInputMode("html");
+      showToast("HTML detected. Switching to HTML mode.");
+    } else {
+      setInputMode("text");
+    }
+  }, [showToast]);
 
   const handleSetSymbolPanelOpen = useCallback((open) => {
     setSymbolPanelOpen(open);
@@ -141,20 +171,42 @@ return (
                 htmlFor="inputText"
                 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                Your Text
+                {inputMode === "html" ? "Brainly HTML" : "Your Text"}
               </label>
-              <CountrySelector
-                selectedCountry={selectedCountry}
-                onCountryChange={setSelectedCountry}
-              />
+              <div className="flex items-center gap-2">
+                <CountrySelector
+                  selectedCountry={selectedCountry}
+                  onCountryChange={setSelectedCountry}
+                />
+                <button
+                  onClick={() => {
+                    setInputMode(inputMode === "text" ? "html" : "text");
+                    setParseError(null);
+                  }}
+                  title={inputMode === "text" ? "Switch to HTML mode" : "Switch to text mode"}
+                  className={`p-2 rounded-lg transition-all duration-200 ${
+                    inputMode === "html"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  <Code className="w-4 h-4" />
+                </button>
+              </div>
             </div>
+            {parseError && (
+              <div className="mb-2 p-2 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-xs text-red-700 dark:text-red-300">
+                {parseError}
+              </div>
+            )}
             <textarea
               ref={textareaRef}
               id="inputText"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Paste your content here to scan for banned words..."
-              className="w-full min-h-[140px] sm:min-h-[180px] p-3 sm:p-4 rounded-2xl border-2 border-border dark:border-slate-600 bg-secondary/20 dark:bg-slate-800/50 text-foreground dark:text-slate-100 text-sm sm:text-base resize-y transition-all duration-300 focus:outline-none focus:border-primary focus:bg-card dark:focus:bg-slate-800 focus:shadow-[0_0_0_4px_hsl(var(--primary)/0.1)] placeholder:text-muted-foreground/60 font-inter"
+              onPaste={handlePaste}
+              placeholder={inputMode === "html" ? "Paste Brainly HTML here..." : "Paste your content here to scan for banned words..."}
+              className="w-full min-h-[140px] sm:min-h-[180px] p-3 sm:p-4 rounded-2xl border-2 border-border dark:border-slate-600 bg-secondary/20 dark:bg-slate-800/50 text-foreground dark:text-slate-100 text-sm sm:text-base resize-y transition-all duration-300 focus:outline-none focus:border-primary focus:bg-card dark:focus:bg-slate-800 focus:shadow-[0_0_0_4px_hsl(var(--primary)/0.1)] placeholder:text-muted-foreground/60 font-inter font-mono"
             />
           </div>
 
