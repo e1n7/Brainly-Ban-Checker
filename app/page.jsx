@@ -294,7 +294,7 @@ return (
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground">Q - Is my text data safe here?</h4>
-                    <p className="text-muted-foreground dark:text-slate-400 mt-1">Yes, completely. This application processes everything locally within your browser. There is no database, no registration required, and absolutely no data collection on our backend.</p>
+                    <p className="text-muted-foreground dark:text-slate-400 mt-1">Your text is sent to the scanner for analysis and is not saved in the database. The private ban-word list stays on the server and is never sent to your browser.</p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground">Q - What should I do if the tool finds a flagged word?</h4>
