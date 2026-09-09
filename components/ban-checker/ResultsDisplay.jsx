@@ -26,8 +26,9 @@ export default function ResultsDisplay({ result }) {
               {isClean ? "All Clear!" : `${matchCount} Flagged Pattern${matchCount > 1 ? "s" : ""} Detected`}
             </h3>
             <p className={`text-xs sm:text-sm mt-1 sm:mt-0.5 ${isClean ? "text-emerald-700/80 dark:text-emerald-400/80" : "text-red-700/80 dark:text-red-400/80"}`}>
-              {isClean ? "Your content doesn't contain any known flagged patterns." : `${occurrenceCount} potential match${occurrenceCount === 1 ? "" : "es"} found. The private moderation terms are not displayed.`}
+              {isClean ? "Your content doesn't contain any known banned words." : "The following words were found in your content:"}
             </p>
+            {!isClean && <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-3 sm:gap-2">{found.map((word, i) => <span key={`${word.word}-${i}`} className="inline-flex break-all rounded-lg border border-red-200 bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:border-red-800/60 dark:bg-red-900/50 dark:text-red-300 sm:px-3 sm:py-1 sm:text-sm">{word.word} ×{word.count}</span>)}</div>}
           </div>
         </div>
 

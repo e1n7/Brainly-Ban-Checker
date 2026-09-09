@@ -79,9 +79,8 @@ Deno.serve(async (req) => {
     }
 
     const result = analyzeText(text, await getBannedWords(countryCode));
-    // Never return the private terms. Only aggregate counts are public.
     return jsonResponse({
-      found: result.found.map(({ count }) => ({ count })),
+      found: result.found,
       matchCount: result.found.length,
       highlightedHTML: result.highlightedHTML,
     });
