@@ -68,6 +68,7 @@
 .faq-list button { @apply flex w-full items-center justify-between gap-2 text-left text-sm transition hover:opacity-70; }
 .faq-list svg { @apply h-4 w-4 shrink-0; }
 .faq-list p { @apply -mt-2 text-xs leading-5 text-muted-foreground; }
+.faq-list .faq-answer { @apply mt-2 text-sm leading-6; }
 select { color-scheme: light; }
 .dark select { color-scheme: dark; }
 select option { background: #ffffff; color: #19345c; }

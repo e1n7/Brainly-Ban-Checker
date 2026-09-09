@@ -18,7 +18,7 @@ export default function Header({ isDark, onToggleTheme }) {
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex"><Shield className="h-6 w-6 text-primary" /><span>Safer Questions<br />Stronger Community</span></div>
+        <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex"><Shield className="h-8 w-8 text-primary" strokeWidth={2.2} /><span>Safer Questions<br />Stronger Community</span></div>
         <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
       </div>
     </header>

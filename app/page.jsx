@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Search, RotateCcw, HelpCircle, FileText, Shield, Info, Check, ChevronDown } from "lucide-react";
+import { Search, RotateCcw, HelpCircle, FileText, Shield, Info, CheckCircle2, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { parseBrainlyAnswer, isHTML } from "@/lib/brainlyParser";
 import { ANALYZE_CONTENT_URL, SUPABASE_PUBLISHABLE_KEY } from "@/lib/supabasePublic";
@@ -24,6 +24,7 @@ export default function BanChecker() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState(null);
   const textareaRef = useRef(null);
 
   const showToast = useCallback((message) => { setToastMessage(message); setToastVisible(true); }, []);
@@ -111,7 +112,7 @@ export default function BanChecker() {
 
             <div className="mt-5 rounded-2xl border border-primary/15 bg-primary/[0.035] p-4 sm:p-5">
               <div className="mb-3 flex items-center gap-2 text-primary"><Shield className="h-5 w-5" /><span className="font-bold">Scan Result</span></div>
-              {result ? <ResultsDisplay result={result} /> : <div className="empty-result"><Search className="h-14 w-14 text-primary/45" /><p className="font-bold text-foreground">No scan yet</p><p>Enter your text above and click the scan button<br className="hidden sm:block" /> to check for banned words.</p></div>}
+              {result ? <ResultsDisplay result={result} /> : <div className="empty-result"><Search strokeWidth={3.2} className="h-14 w-14 text-primary/75" /><p className="font-bold text-foreground">No scan yet</p><p>Enter your text above and click the scan button<br className="hidden sm:block" /> to check for banned words.</p></div>}
             </div>
 
             <button onClick={() => setInfoOpen(true)} className="mt-4 flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-accent"><HelpCircle className="h-4 w-4" /> Need help?</button>
@@ -119,8 +120,8 @@ export default function BanChecker() {
 
           <aside className="space-y-4">
             <InfoCard icon={<Info className="h-5 w-5" />} title="About" tone="blue"><p>The Ban Word Checker helps you find banned or restricted words in your text. It&apos;s quick, easy and keeps your posts safe for the community.</p></InfoCard>
-            <InfoCard icon={<Check className="h-5 w-5" />} title="What We Check" tone="green"><ul><li>Banned and restricted words</li><li>Inappropriate language</li><li>Hate speech</li><li>Spam and harmful content</li></ul></InfoCard>
-            <InfoCard icon={<HelpCircle className="h-5 w-5" />} title="FAQ" tone="purple"><div className="faq-list"><button onClick={() => setInfoOpen(true)}>Why are certain words banned on Brainly? <ChevronDown /></button><p>The platform uses automated filters to keep the community safe, educational, and family-friendly.</p><button onClick={() => setInfoOpen(true)}>Is my text data safe here? <ChevronDown /></button><p>Your text is sent for analysis and is not saved in the database. The private ban-word list stays on the server.</p><button onClick={() => setInfoOpen(true)}>What should I do if content is flagged? <ChevronDown /></button><p>Use the Symbol Finder to explore alternate characters.</p></div></InfoCard>
+            <InfoCard icon={<CheckCircle2 className="h-5 w-5" />} title="What We Check" tone="green"><ul><li>Banned and restricted words</li><li>Inappropriate language</li><li>Hate speech</li><li>Spam and harmful content</li></ul></InfoCard>
+            <InfoCard icon={<HelpCircle className="h-5 w-5" />} title="FAQ" tone="purple"><div className="faq-list"><FaqItem id="banned" openFaq={openFaq} setOpenFaq={setOpenFaq} question="Why are certain words banned on Brainly?">The platform uses automated filters to keep the community safe, educational, and family-friendly.</FaqItem><FaqItem id="safe" openFaq={openFaq} setOpenFaq={setOpenFaq} question="Is my text data safe here?">Your text is sent for analysis and is not saved in the database. The private ban-word list stays on the server.</FaqItem><FaqItem id="flagged" openFaq={openFaq} setOpenFaq={setOpenFaq} question="What should I do if content is flagged?">Use the Symbol Finder to explore alternate characters.</FaqItem></div></InfoCard>
           </aside>
         </div>
       </div>
@@ -134,4 +135,9 @@ export default function BanChecker() {
 
 function InfoCard({ icon, title, tone, children }) {
   return <section className={`info-card info-card-${tone}`}><div className="mb-2 flex items-center gap-3 font-bold"><span className="info-card-icon">{icon}</span><h2>{title}</h2></div><div className="text-sm leading-6 text-muted-foreground">{children}</div></section>;
+}
+
+function FaqItem({ id, openFaq, setOpenFaq, question, children }) {
+  const isOpen = openFaq === id;
+  return <div><button type="button" aria-expanded={isOpen} onClick={() => setOpenFaq(isOpen ? null : id)}>{question} <ChevronDown className={isOpen ? "rotate-180 transition-transform" : "transition-transform"} /></button>{isOpen && <p className="faq-answer">{children}</p>}</div>;
 }
