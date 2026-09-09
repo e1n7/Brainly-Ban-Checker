@@ -1,93 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-function escapeRegExp(string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function analyzeContent(text: string, bannedWords: string[]) {
-  if (!text || (typeof text === "string" && !text.trim())) {
-    return { found: [], highlightedHTML: "" };
-  }
-
-  const lowerText = text.toLowerCase();
-  const foundWords: { word: string; count: number }[] = [];
-
-  bannedWords.forEach((word) => {
-    const lowerWord = word.toLowerCase();
-    if (!lowerWord || !lowerText.includes(lowerWord)) return;
-
-    let count = 0;
-    let searchStart = 0;
-    while ((searchStart = lowerText.indexOf(lowerWord, searchStart)) !== -1) {
-      count += 1;
-      searchStart += lowerWord.length;
-    }
-    foundWords.push({ word, count });
-  });
-
-  let highlightedHTML = text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\n/g, "<br>");
-
-  if (foundWords.length > 0) {
-    const sorted = [...foundWords].sort((a, b) => b.word.length - a.word.length);
-    const replacements: { start: number; end: number; word: string }[] = [];
-
-    sorted.forEach(({ word }) => {
-      const regex = new RegExp(escapeRegExp(word), "gi");
-      let match;
-      while ((match = regex.exec(text)) !== null) {
-        replacements.push({
-          start: match.index,
-          end: match.index + match[0].length,
-          word: match[0],
-        });
-      }
-    });
-
-    replacements.sort((a, b) => {
-      if (a.start !== b.start) return a.start - b.start;
-      return (b.end - b.start) - (a.end - a.start);
-    });
-
-    const filtered: { start: number; end: number; word: string }[] = [];
-    for (const replacement of replacements) {
-      const overlappingIndex = filtered.findIndex((r) =>
-        replacement.start < r.end && replacement.end > r.start
-      );
-      if (overlappingIndex >= 0) {
-        const overlapping = filtered[overlappingIndex];
-        const replacementLen = replacement.end - replacement.start;
-        const overlappingLen = overlapping.end - overlapping.start;
-        if (replacementLen > overlappingLen) filtered[overlappingIndex] = replacement;
-      } else {
-        filtered.push(replacement);
-      }
-    }
-
-    filtered.sort((a, b) => b.start - a.start);
-
-    let result = text;
-    for (const replacement of filtered) {
-      result = result.slice(0, replacement.start) +
-        `___MARK_START___${result.slice(replacement.start, replacement.end)}___MARK_END___` +
-        result.slice(replacement.end);
-    }
-
-    highlightedHTML = result
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\n/g, "<br>")
-      .replace(/___MARK_START___/g, '<mark class="highlight">')
-      .replace(/___MARK_END___/g, "</mark>");
-  }
-
-  return { found: foundWords, highlightedHTML };
-}
+import { analyzeText } from "../../../lib/analyzeText.js";
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -95,25 +8,48 @@ const supabase = createClient(
   { auth: { persistSession: false } },
 );
 
+const ALLOWED_COUNTRIES = new Set(["PH", "US", "BR", "RO"]);
 const WORD_CACHE_TTL_MS = 5 * 60 * 1000;
+const RATE_WINDOW_MS = 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 30;
+const MAX_WORDS_PER_PAGE = 1000;
 const wordCache = new Map<string, { words: string[]; expiresAt: number }>();
+const rateLimit = new Map<string, { count: number; windowStartedAt: number }>();
 
 async function getBannedWords(countryCode: string) {
   const cached = wordCache.get(countryCode);
   if (cached && cached.expiresAt > Date.now()) return cached.words;
 
-  const { data, error } = await supabase
-    .from("ban_words")
-    .select("word")
-    .eq("country_code", countryCode)
-    .eq("enabled", true)
-    .limit(5000);
+  const words: string[] = [];
+  for (let offset = 0; ; offset += MAX_WORDS_PER_PAGE) {
+    const { data, error } = await supabase
+      .from("ban_words")
+      .select("word")
+      .eq("country_code", countryCode)
+      .eq("enabled", true)
+      .range(offset, offset + MAX_WORDS_PER_PAGE - 1);
+    if (error) throw error;
+    words.push(...(data ?? []).map((row) => row.word));
+    if (!data || data.length < MAX_WORDS_PER_PAGE) break;
+  }
 
-  if (error) throw error;
-
-  const words = data.map((row) => row.word);
   wordCache.set(countryCode, { words, expiresAt: Date.now() + WORD_CACHE_TTL_MS });
   return words;
+}
+
+function getClientKey(req: Request) {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
+function isRateLimited(key: string) {
+  const now = Date.now();
+  const current = rateLimit.get(key);
+  if (!current || now - current.windowStartedAt >= RATE_WINDOW_MS) {
+    rateLimit.set(key, { count: 1, windowStartedAt: now });
+    return false;
+  }
+  current.count += 1;
+  return current.count > MAX_REQUESTS_PER_WINDOW;
 }
 
 const corsHeaders = {
@@ -130,26 +66,23 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { status: 200, headers: corsHeaders });
-  }
-
-  if (req.method !== "POST") {
-    return jsonResponse({ error: "Method not allowed." }, 405);
+  if (req.method === "OPTIONS") return new Response("ok", { status: 200, headers: corsHeaders });
+  if (req.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405);
+  if (isRateLimited(getClientKey(req))) {
+    return jsonResponse({ error: "Too many requests. Please try again later." }, 429);
   }
 
   try {
     const { text, countryCode } = await req.json();
-    const allowedCountries = ["PH", "US", "BR", "RO"];
-
-    if (typeof text !== "string" || !text.trim() || text.length > 20000 || !allowedCountries.includes(countryCode)) {
+    if (typeof text !== "string" || !text.trim() || text.length > 20000 || !ALLOWED_COUNTRIES.has(countryCode)) {
       return jsonResponse({ error: "Invalid request." }, 400);
     }
 
-    const result = analyzeContent(text, await getBannedWords(countryCode));
-
+    const result = analyzeText(text, await getBannedWords(countryCode));
+    // Never return the private terms. Only aggregate counts are public.
     return jsonResponse({
-      found: result.found,
+      found: result.found.map(({ count }) => ({ count })),
+      matchCount: result.found.length,
       highlightedHTML: result.highlightedHTML,
     });
   } catch (error) {

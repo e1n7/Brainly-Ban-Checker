@@ -6,7 +6,7 @@ A Next.js app for checking Brainly content against country-specific moderation l
 
 The browser sends the text and selected country to a Supabase Edge Function. The Edge Function reads the private `ban_words` table, runs the existing checker algorithm, and returns the result. The ban-word list is not included in the browser bundle or this GitHub repository.
 
-The result intentionally displays match numbers instead of the private matched words. Highlighted locations are still shown so the checker remains useful without exposing the list.
+The result intentionally displays aggregate match counts instead of the private matched words. Highlighted locations are still shown so the checker remains useful without exposing the list. Matching is case-insensitive substring matching, which may flag a term appearing inside a larger word.
 
 ## Countries
 
@@ -36,3 +36,5 @@ npm run start
 The database table is `public.ban_words`. Row-level security is enabled, and public `SELECT` access is revoked. The `analyze-content` Edge Function uses Supabase's server-side service role to read the table.
 
 The private word data must never be put back into `data/`, `public/`, a client component, or a `NEXT_PUBLIC_` environment variable.
+
+The public function applies a best-effort per-runtime request limit. Because Edge Function instances are independent, this is not a replacement for provider-level rate limiting.
