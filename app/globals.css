@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,41 +6,39 @@
 @layer base {
   :root {
     --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    --background: 198 54% 97%;
+    --foreground: 219 52% 18%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 239 84% 67%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 84% 60%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --card-foreground: 219 52% 18%;
+    --primary: 216 86% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 196 58% 94%;
+    --secondary-foreground: 219 52% 18%;
+    --muted: 203 32% 57%;
+    --muted-foreground: 211 29% 52%;
+    --accent: 226 78% 57%;
+    --accent-foreground: 0 0% 100%;
+    --border: 204 32% 87%;
+    --input: 0 0% 100%;
+    --ring: 216 86% 50%;
     --radius: 0.75rem;
   }
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 6%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 239 84% 67%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 224 76% 48%;
+    --background: 222 43% 8%;
+    --foreground: 210 40% 96%;
+    --card: 222 37% 12%;
+    --card-foreground: 210 40% 96%;
+    --primary: 207 91% 63%;
+    --primary-foreground: 222 43% 8%;
+    --secondary: 218 30% 18%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217 18% 58%;
+    --muted-foreground: 215 20% 67%;
+    --accent: 226 78% 66%;
+    --accent-foreground: 222 43% 8%;
+    --border: 217 28% 24%;
+    --input: 222 32% 16%;
+    --ring: 207 91% 63%;
   }
 }
 
@@ -50,18 +47,27 @@
   body { @apply bg-background text-foreground font-inter; }
 }
 
-.highlight {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  color: #b91c1c;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-weight: 600;
-  border-bottom: 2px solid #f87171;
-  margin: 0 2px;
-}
+.ambient-orb { position: absolute; width: 240px; height: 240px; border-radius: 999px; background: hsl(var(--primary) / .09); filter: blur(2px); pointer-events: none; }
+.ambient-orb-left { top: -110px; left: -90px; }
+.ambient-orb-right { top: -120px; right: -80px; }
+.shadow-soft { box-shadow: 0 14px 40px hsl(215 45% 25% / .08); }
+.dark .shadow-soft { box-shadow: 0 18px 48px hsl(0 0% 0% / .3); }
 
-.dark .highlight {
-  background: linear-gradient(135deg, rgba(239,68,68,0.25) 0%, rgba(239,68,68,0.15) 100%);
-  color: #fca5a5;
-  border-bottom-color: #ef4444;
-}
+.info-card { @apply rounded-2xl border p-4 sm:p-5; }
+.info-card-blue { @apply border-primary/20 bg-primary/[0.035]; }
+.info-card-green { @apply border-emerald-300/40 bg-emerald-50/70 dark:border-emerald-700/50 dark:bg-emerald-950/25; }
+.info-card-purple { @apply border-indigo-200/70 bg-indigo-50/50 dark:border-indigo-800/50 dark:bg-indigo-950/25; }
+.info-card-blue h2 { @apply text-primary; }
+.info-card-green h2, .info-card-green li::before { @apply text-emerald-600 dark:text-emerald-400; }
+.info-card-purple h2, .info-card-purple button { @apply text-indigo-600 dark:text-indigo-300; }
+.info-card-icon { @apply inline-flex items-center justify-center; }
+.info-card ul { @apply space-y-1.5; }
+.info-card li { @apply relative pl-6; }
+.info-card li::before { content: '✓'; @apply absolute left-0 font-extrabold; }
+.faq-list { @apply space-y-3; }
+.faq-list button { @apply flex w-full items-center justify-between gap-2 text-left text-sm transition hover:opacity-70; }
+.faq-list svg { @apply h-4 w-4 shrink-0; }
+.empty-result { @apply flex min-h-[135px] flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground; }
+
+.highlight { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #b91c1c; padding: 2px 6px; border-radius: 6px; font-weight: 600; border-bottom: 2px solid #f87171; margin: 0 2px; }
+.dark .highlight { background: linear-gradient(135deg, rgba(239,68,68,.25) 0%, rgba(239,68,68,.15) 100%); color: #fca5a5; border-bottom-color: #ef4444; }

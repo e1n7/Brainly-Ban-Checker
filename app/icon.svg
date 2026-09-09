@@ -3,10 +3,10 @@
 
   <g>
     <!-- Sharp 90-degree bottom-left base corner -->
-    <polygon fill="#006b52" points="60.3,203.011 60.3,345.72 203.011,345.72" />
+    <polygon fill="#01796f" points="60.3,203.011 60.3,345.72 203.011,345.72" />
 
     <!-- Main circle overlay forming the smooth teardrop badge -->
-    <circle fill="#006b52" cx="203.011" cy="203.011" r="142.71" />
+    <circle fill="#01796f" cx="203.011" cy="203.011" r="142.71" />
   </g>
 
   <!-- Original Brainly 'B' path preserved in clean white -->
