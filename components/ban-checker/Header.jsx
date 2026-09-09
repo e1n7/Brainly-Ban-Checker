@@ -12,11 +12,11 @@ export default function Header({ isDark, onToggleTheme }) {
       {/* Brand Logo and Titles Group */}
       <div className="text-center mt-6 sm:mt-4">
         {/* Brainly Logo Element */}
-        <img 
-          id="logo" 
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Brainly_logo.svg/1920px-Brainly_logo.svg.png" 
-          alt="Brainly Logo" 
-          className="h-9 sm:h-11 mx-auto mb-3 object-contain select-none pointer-events-none"
+        <img
+          id="logo"
+          src="/icon.svg"
+          alt="Brainly Ban Checker"
+          className="h-14 w-14 sm:h-16 sm:w-16 mx-auto mb-3 object-contain select-none pointer-events-none"
         />
 
         <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight">
