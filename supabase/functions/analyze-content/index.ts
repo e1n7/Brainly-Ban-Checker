@@ -95,6 +95,27 @@ const supabase = createClient(
   { auth: { persistSession: false } },
 );
 
+const WORD_CACHE_TTL_MS = 5 * 60 * 1000;
+const wordCache = new Map<string, { words: string[]; expiresAt: number }>();
+
+async function getBannedWords(countryCode: string) {
+  const cached = wordCache.get(countryCode);
+  if (cached && cached.expiresAt > Date.now()) return cached.words;
+
+  const { data, error } = await supabase
+    .from("ban_words")
+    .select("word")
+    .eq("country_code", countryCode)
+    .eq("enabled", true)
+    .limit(5000);
+
+  if (error) throw error;
+
+  const words = data.map((row) => row.word);
+  wordCache.set(countryCode, { words, expiresAt: Date.now() + WORD_CACHE_TTL_MS });
+  return words;
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "apikey, authorization, content-type, x-client-info",
@@ -125,16 +146,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Invalid request." }, 400);
     }
 
-    const { data, error } = await supabase
-      .from("ban_words")
-      .select("word")
-      .eq("country_code", countryCode)
-      .eq("enabled", true)
-      .limit(5000);
-
-    if (error) throw error;
-
-    const result = analyzeContent(text, data.map((row) => row.word));
+    const result = analyzeContent(text, await getBannedWords(countryCode));
 
     return jsonResponse({
       found: result.found,
