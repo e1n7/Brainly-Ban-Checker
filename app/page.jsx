@@ -99,15 +99,17 @@ export default function BanChecker() {
               <span className="absolute bottom-3 right-4 text-xs text-muted-foreground">{text.length}/20000</span>
             </div>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-[220px_130px_230px] md:justify-between">
+            <div className="mt-4 grid gap-3 md:grid-cols-[220px_minmax(0,1fr)] md:items-center">
               <CountrySelector selectedCountry={selectedCountry} onCountryChange={setSelectedCountry} />
-              <button onClick={handleReset} className="order-3 flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-secondary hover:text-foreground md:order-2">
-                <RotateCcw className="h-4 w-4" /> Clear
-              </button>
-              <button onClick={handleAnalyze} disabled={isAnalyzing || !text.trim()} className="order-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-accent px-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 md:order-3 md:w-[230px]">
-                {isAnalyzing ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <Search className="h-4 w-4" />}
-                {isAnalyzing ? "Scanning..." : "Scan for Banned Words"}
-              </button>
+              <div className="flex w-full justify-end gap-3">
+                <button onClick={handleReset} className="flex h-12 w-[130px] items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-secondary hover:text-foreground">
+                  <RotateCcw className="h-4 w-4" /> Clear
+                </button>
+                <button onClick={handleAnalyze} disabled={isAnalyzing || !text.trim()} className="flex h-12 w-[230px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-accent px-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50">
+                  {isAnalyzing ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <Search className="h-4 w-4" />}
+                  {isAnalyzing ? "Scanning..." : "Scan for Banned Words"}
+                </button>
+              </div>
             </div>
 
             <div className="mt-5 rounded-2xl border border-primary/15 bg-primary/[0.035] p-4 sm:p-5">
