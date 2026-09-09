@@ -16,7 +16,9 @@ export default function BanChecker() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("PH");
   const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") return document.documentElement.classList.contains("dark");
+    if (typeof window !== "undefined") {
+      return window.localStorage.getItem("brainly-ban-checker-theme") === "dark";
+    }
     return false;
   });
   const [symbolPanelOpen, setSymbolPanelOpen] = useState(false);
@@ -39,9 +41,14 @@ export default function BanChecker() {
     setIsDark((prev) => {
       const next = !prev;
       document.documentElement.classList.toggle("dark", next);
+      window.localStorage.setItem("brainly-ban-checker-theme", next ? "dark" : "light");
       return next;
     });
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDark);
+  }, [isDark]);
 
   const handleAnalyze = useCallback(async () => {
     if (!text.trim()) { showToast("Please enter content first."); return; }
