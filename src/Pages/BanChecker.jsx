@@ -60,6 +60,10 @@ export default function BanChecker() {
       return bannedWordsData.bannedWordsPH;
     } else if (selectedCountry === "US") {
       return bannedWordsData.bannedWordsUS;
+    } else if (selectedCountry === "BR") {
+      return bannedWordsData.bannedWordsBR;
+    } else if (selectedCountry === "RO") {
+      return bannedWordsData.bannedWordsRO;
     }
     return bannedWordsData.bannedWordsPH; // Default to PH
   }, [selectedCountry]);
