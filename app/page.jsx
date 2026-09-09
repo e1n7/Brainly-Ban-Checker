@@ -3,7 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Search, RotateCcw, HelpCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { parseBrainlyAnswer, isHTML, extractPlainText } from "@/lib/brainlyParser";
+import { parseBrainlyAnswer, isHTML } from "@/lib/brainlyParser";
 import { ANALYZE_CONTENT_URL, SUPABASE_PUBLISHABLE_KEY } from "@/lib/supabasePublic";
 import Header from "@/components/ban-checker/Header";
 import CountrySelector from "@/components/ban-checker/CountrySelector";
@@ -26,7 +26,6 @@ export default function BanChecker() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [parseError, setParseError] = useState(null);
   const textareaRef = useRef(null);
 
   const showToast = useCallback((message) => {
@@ -63,7 +62,6 @@ export default function BanChecker() {
     }
 
     setIsAnalyzing(true);
-    setParseError(null);
 
     try {
       let contentToAnalyze = text;
@@ -106,7 +104,6 @@ export default function BanChecker() {
   const handleReset = useCallback(() => {
     setText("");
     setResult(null);
-    setParseError(null);
     setSymbolSearchResetKey((prev) => prev + 1);
     if (textareaRef.current) textareaRef.current.focus();
   }, []);
