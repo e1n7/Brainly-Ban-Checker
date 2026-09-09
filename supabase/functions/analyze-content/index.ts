@@ -89,9 +89,26 @@ const supabase = createClient(
   { auth: { persistSession: false } },
 );
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "apikey, authorization, content-type, x-client-info",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { status: 200, headers: corsHeaders });
+  }
+
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed." }), { status: 405 });
+    return jsonResponse({ error: "Method not allowed." }, 405);
   }
 
   try {
@@ -99,7 +116,7 @@ Deno.serve(async (req) => {
     const allowedCountries = ["PH", "US", "BR", "RO"];
 
     if (typeof text !== "string" || !text.trim() || text.length > 20000 || !allowedCountries.includes(countryCode)) {
-      return new Response(JSON.stringify({ error: "Invalid request." }), { status: 400 });
+      return jsonResponse({ error: "Invalid request." }, 400);
     }
 
     const { data, error } = await supabase
@@ -113,14 +130,12 @@ Deno.serve(async (req) => {
 
     const result = analyzeContent(text, data.map((row) => row.word));
 
-    return new Response(JSON.stringify({
+    return jsonResponse({
       found: result.found.map((_, index) => `Match ${index + 1}`),
       highlightedHTML: result.highlightedHTML,
-    }), {
-      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ error: "Unable to analyze content." }), { status: 500 });
+    return jsonResponse({ error: "Unable to analyze content." }, 500);
   }
 });
