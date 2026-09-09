@@ -17,8 +17,10 @@ export default function Header({ isDark, onToggleTheme }) {
           <p className="mt-1 max-w-xl text-xs leading-5 text-muted-foreground sm:text-sm">Paste your text below and we&apos;ll check for banned words<br className="hidden sm:block" /> before you post. Stay safe and follow the rules!</p>
         </div>
       </div>
-      <div className="hidden items-center gap-3 text-xs text-muted-foreground sm:flex"><Shield className="h-7 w-7 text-primary" /><span>Safer Questions<br />Stronger Community</span></div>
-      <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
+      <div className="flex items-center gap-3">
+        <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex"><Shield className="h-6 w-6 text-primary" /><span>Safer Questions<br />Stronger Community</span></div>
+        <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
+      </div>
     </header>
   );
 }

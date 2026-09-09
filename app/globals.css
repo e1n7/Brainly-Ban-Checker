@@ -67,6 +67,11 @@
 .faq-list { @apply space-y-3; }
 .faq-list button { @apply flex w-full items-center justify-between gap-2 text-left text-sm transition hover:opacity-70; }
 .faq-list svg { @apply h-4 w-4 shrink-0; }
+.faq-list p { @apply -mt-2 text-xs leading-5 text-muted-foreground; }
+select { color-scheme: light; }
+.dark select { color-scheme: dark; }
+select option { background: #ffffff; color: #19345c; }
+.dark select option { background: #182233; color: #f1f5f9; }
 .empty-result { @apply flex min-h-[135px] flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground; }
 
 .highlight { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #b91c1c; padding: 2px 6px; border-radius: 6px; font-weight: 600; border-bottom: 2px solid #f87171; margin: 0 2px; }
