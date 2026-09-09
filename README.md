@@ -1,58 +1,38 @@
 # Brainly Ban Checker
 
-A lightweight React + Vite app for scanning text content against Brainly banned words.
+A Next.js app for checking Brainly content against country-specific moderation lists.
 
-## Features
+## Architecture
 
-- Detects banned words for Brainly Philippines (`PH`) and Brainly United States (`US`)
-- Uses a JSON data source for banned word lists and symbol mappings
-- Supports light/dark mode theme toggle
-- Shows flagged words and quick results
+The browser sends the text and selected country to a Supabase Edge Function. The Edge Function reads the private `ban_words` table, runs the existing checker algorithm, and returns the result. The ban-word list is not included in the browser bundle or this GitHub repository.
 
-## Project structure
+The result intentionally displays match numbers instead of the private matched words. Highlighted locations are still shown so the checker remains useful without exposing the list.
 
-- `src/Pages/BanChecker.jsx` — main page and app logic
-- `src/components/ban-checker/` — UI components
-- `src/lib/banChecker.js` — content analysis helper
-- `src/lib/bannedWords.json` — banned words and symbol data
+## Countries
 
-## Requirements
+- Brainly Philippines (`PH`)
+- Brainly United States (`US`)
+- Brainly Brazil (`BR`)
+- Brainly Romania (`RO`)
 
-- Node.js 18+ recommended
-- npm
-
-## Setup
+## Local development
 
 ```bash
 npm install
-```
-
-## Run locally
-
-```bash
 npm run dev
 ```
 
-Then open the local URL shown by Vite, for example:
+Open `http://localhost:3000`.
 
-```
-http://localhost:5174/Ban-Checker/
-```
-
-## Build for production
+## Production build
 
 ```bash
 npm run build
+npm run start
 ```
 
-## Preview production build
+## Supabase
 
-```bash
-npm run preview
-```
+The database table is `public.ban_words`. Row-level security is enabled, and public `SELECT` access is revoked. The `analyze-content` Edge Function uses Supabase's server-side service role to read the table.
 
-## Notes
-
-- Vite may choose an alternate port if `5173` is already in use.
-- The app currently loads banned word data from `src/lib/bannedWords.json`.
-- If you need to add or update banned words, edit the JSON arrays directly.
+The private word data must never be put back into `data/`, `public/`, a client component, or a `NEXT_PUBLIC_` environment variable.
