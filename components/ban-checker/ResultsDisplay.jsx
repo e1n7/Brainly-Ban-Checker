@@ -56,10 +56,10 @@ export default function ResultsDisplay({ result }) {
               <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3\">
                 {result.found.map((word, i) => (
                   <span
-                    key={i}
+                    key={`${word.word}-${i}`}
                     className="inline-flex px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs sm:text-sm font-medium bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/60 break-all"
                   >
-                    {word}
+                    {word.word} ×{word.count}
                   </span>
                 ))}
               </div>

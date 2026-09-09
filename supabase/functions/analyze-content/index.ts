@@ -11,13 +11,19 @@ function analyzeContent(text: string, bannedWords: string[]) {
   }
 
   const lowerText = text.toLowerCase();
-  const foundWords: string[] = [];
+  const foundWords: { word: string; count: number }[] = [];
 
   bannedWords.forEach((word) => {
     const lowerWord = word.toLowerCase();
-    if (lowerText.includes(lowerWord)) {
-      foundWords.push(word);
+    if (!lowerWord || !lowerText.includes(lowerWord)) return;
+
+    let count = 0;
+    let searchStart = 0;
+    while ((searchStart = lowerText.indexOf(lowerWord, searchStart)) !== -1) {
+      count += 1;
+      searchStart += lowerWord.length;
     }
+    foundWords.push({ word, count });
   });
 
   let highlightedHTML = text
@@ -27,10 +33,10 @@ function analyzeContent(text: string, bannedWords: string[]) {
     .replace(/\n/g, "<br>");
 
   if (foundWords.length > 0) {
-    const sorted = [...foundWords].sort((a, b) => b.length - a.length);
+    const sorted = [...foundWords].sort((a, b) => b.word.length - a.word.length);
     const replacements: { start: number; end: number; word: string }[] = [];
 
-    sorted.forEach((word) => {
+    sorted.forEach(({ word }) => {
       const regex = new RegExp(escapeRegExp(word), "gi");
       let match;
       while ((match = regex.exec(text)) !== null) {
@@ -131,7 +137,7 @@ Deno.serve(async (req) => {
     const result = analyzeContent(text, data.map((row) => row.word));
 
     return jsonResponse({
-      found: result.found.map((_, index) => `Match ${index + 1}`),
+      found: result.found,
       highlightedHTML: result.highlightedHTML,
     });
   } catch (error) {
