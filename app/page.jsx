@@ -92,7 +92,7 @@ export default function BanChecker() {
     <div className="min-h-screen relative overflow-hidden bg-background text-foreground px-4 py-5 sm:px-6 lg:px-8">
       <div className="ambient-orb ambient-orb-left" />
       <div className="ambient-orb ambient-orb-right" />
-      <div className="relative z-10 mx-auto max-w-[1500px]">
+      <div className="relative z-10 mx-auto min-w-0 max-w-[1500px]">
         <Header isDark={isDark} onToggleTheme={handleToggleTheme} />
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_345px] xl:gap-6">
@@ -108,11 +108,11 @@ export default function BanChecker() {
 
             <div className="mt-4 grid gap-3 md:grid-cols-[220px_minmax(0,1fr)] md:items-center">
               <CountrySelector selectedCountry={selectedCountry} onCountryChange={setSelectedCountry} />
-              <div className="flex w-full justify-end gap-3">
-                <button onClick={handleReset} className="flex h-12 w-[130px] items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-secondary hover:text-foreground">
+              <div className="flex w-full flex-col justify-end gap-3 sm:flex-row">
+                <button onClick={handleReset} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-muted-foreground transition hover:border-primary hover:bg-secondary hover:text-foreground sm:w-[130px]">
                   <RotateCcw className="h-4 w-4" /> Clear
                 </button>
-                <button onClick={handleAnalyze} disabled={isAnalyzing || !text.trim()} className="flex h-12 w-[230px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-accent px-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50">
+                <button onClick={handleAnalyze} disabled={isAnalyzing || !text.trim()} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-accent px-4 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 sm:w-[230px]">
                   {isAnalyzing ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <Search className="h-4 w-4" />}
                   {isAnalyzing ? "Scanning..." : "Scan for Banned Words"}
                 </button>
