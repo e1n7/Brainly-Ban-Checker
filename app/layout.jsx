@@ -5,6 +5,11 @@ export const metadata = {
   description: "Scan Brainly content for potentially flagged words.",
 };
 
+export const viewport = {
+  width: 1280,
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
