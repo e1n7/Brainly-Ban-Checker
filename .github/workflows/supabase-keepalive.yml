@@ -1,0 +1,42 @@
+name: Supabase keep-alive
+
+on:
+  # Run every three days so normal GitHub Actions scheduling delays remain
+  # comfortably inside Supabase's seven-day inactivity window.
+  schedule:
+    - cron: "17 03 */3 * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query the Supabase Edge Function
+        env:
+          SUPABASE_FUNCTION_URL: https://ptxgraodktteouoqlffz.supabase.co/functions/v1/analyze-content
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_HAzBcpDNFI6wHIf-_iAXOQ_CXrZduvV
+        run: |
+          set -euo pipefail
+          response_file="$(mktemp)"
+          trap 'rm -f "$response_file"' EXIT
+
+          http_code="$(curl --fail-with-body --silent --show-error --retry 3 --retry-delay 5 \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --header "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+            --header "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}" \
+            --data '{"text":"keepalive","countryCode":"PH"}' \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            "$SUPABASE_FUNCTION_URL")"
+
+          if [ "$http_code" != "200" ]; then
+            echo "Supabase keep-alive failed with HTTP $http_code"
+            cat "$response_file"
+            exit 1
+          fi
+
+          echo "Supabase keep-alive succeeded: $(cat "$response_file")"
