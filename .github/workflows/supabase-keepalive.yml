@@ -1,10 +1,10 @@
 name: Supabase keep-alive
 
 on:
-  # Run every three days so normal GitHub Actions scheduling delays remain
+  # Run daily so occasional GitHub Actions scheduling delays remain
   # comfortably inside Supabase's seven-day inactivity window.
   schedule:
-    - cron: "17 03 */3 * *"
+    - cron: "17 03 * * *"
   workflow_dispatch:
 
 permissions: {}
