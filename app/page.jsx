@@ -10,12 +10,15 @@ import Header from "@/components/ban-checker/Header";
 import CountrySelector from "@/components/ban-checker/CountrySelector";
 import ResultsDisplay from "@/components/ban-checker/ResultsDisplay";
 import SymbolPanel from "@/components/ban-checker/SymbolPanel";
+import { COUNTRIES } from "@/lib/countries";
 
 export default function BanChecker() {
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("US");
+  const [countryPreferenceLoaded, setCountryPreferenceLoaded] = useState(false);
+  const [clientId, setClientId] = useState("");
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== "undefined") {
       return window.localStorage.getItem("brainly-ban-checker-theme") === "dark";
@@ -44,6 +47,29 @@ export default function BanChecker() {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
 
+  useEffect(() => {
+    const savedCountry = window.localStorage.getItem("brainly-ban-checker-country");
+    if (savedCountry && COUNTRIES.some((country) => country.code === savedCountry)) {
+      setSelectedCountry(savedCountry);
+    }
+    setCountryPreferenceLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (countryPreferenceLoaded) {
+      window.localStorage.setItem("brainly-ban-checker-country", selectedCountry);
+    }
+  }, [countryPreferenceLoaded, selectedCountry]);
+
+  useEffect(() => {
+    let savedClientId = window.localStorage.getItem("brainly-ban-checker-client-id");
+    if (!savedClientId) {
+      savedClientId = window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      window.localStorage.setItem("brainly-ban-checker-client-id", savedClientId);
+    }
+    setClientId(savedClientId);
+  }, []);
+
   const handleAnalyze = useCallback(async () => {
     if (!text.trim()) { gooeyToast.warning("Please enter content first.", { showTimestamp: false }); return; }
     setIsAnalyzing(true);
@@ -56,7 +82,7 @@ export default function BanChecker() {
       }
       const response = await fetch(ANALYZE_CONTENT_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` },
+        headers: { "Content-Type": "application/json", apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`, ...(clientId ? { "x-client-id": clientId } : {}) },
         body: JSON.stringify({ text: contentToAnalyze, countryCode: selectedCountry }),
       });
       const res = await response.json();
@@ -65,7 +91,7 @@ export default function BanChecker() {
     } catch (error) {
       gooeyToast.error("Analysis failed", { description: error.message || "Unable to analyze content.", showTimestamp: false });
     } finally { setIsAnalyzing(false); }
-  }, [text, selectedCountry, showToast]);
+  }, [text, selectedCountry, clientId, showToast]);
 
   const handleReset = useCallback(() => {
     setText(""); setResult(null); setSymbolSearchResetKey((prev) => prev + 1);
