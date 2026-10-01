@@ -6,7 +6,7 @@ export default function ThemeToggle({ isDark, onToggle }) {
   return (
     <button
       onClick={onToggle}
-      className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl border border-border dark:border-slate-600 bg-card dark:bg-slate-800 hover:bg-secondary dark:hover:bg-slate-700 transition-all duration-300 shadow-sm hover:shadow-md group min-h-[44px] min-w-[44px]"
+      className="relative flex h-9 w-9 min-h-9 min-w-9 items-center justify-center rounded-lg border border-border bg-card shadow-sm transition-all duration-300 hover:bg-secondary hover:shadow-md group dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 sm:h-11 sm:w-11 sm:min-h-[44px] sm:min-w-[44px] sm:rounded-xl"
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       <motion.div

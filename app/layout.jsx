@@ -1,4 +1,5 @@
 import "./globals.css";
+import "goey-toast/styles.css";
 
 export const metadata = {
   title: "Brainly Ban Checker",
