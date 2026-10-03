@@ -12,18 +12,41 @@ import ResultsDisplay from "@/components/ban-checker/ResultsDisplay";
 import SymbolPanel from "@/components/ban-checker/SymbolPanel";
 import { COUNTRIES } from "@/lib/countries";
 
+const DEFAULT_COUNTRY = "US";
+const COUNTRY_STORAGE_KEY = "brainly-ban-checker-country";
+const CLIENT_ID_STORAGE_KEY = "brainly-ban-checker-client-id";
+
+function readLocalStorage(key) {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalStorage(key, value) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Storage may be unavailable in private browsing or restricted environments.
+  }
+}
+
+function isSupportedCountry(value) {
+  return COUNTRIES.some((country) => country.code === value);
+}
+
 export default function BanChecker() {
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState("US");
+  const [selectedCountry, setSelectedCountry] = useState(DEFAULT_COUNTRY);
   const [countryPreferenceLoaded, setCountryPreferenceLoaded] = useState(false);
   const [clientId, setClientId] = useState("");
   const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      return window.localStorage.getItem("brainly-ban-checker-theme") === "dark";
-    }
-    return false;
+    return readLocalStorage("brainly-ban-checker-theme") === "dark";
   });
   const [symbolPanelOpen, setSymbolPanelOpen] = useState(false);
   const [symbolSearchResetKey, setSymbolSearchResetKey] = useState(0);
@@ -38,7 +61,7 @@ export default function BanChecker() {
     setIsDark((prev) => {
       const next = !prev;
       document.documentElement.classList.toggle("dark", next);
-      window.localStorage.setItem("brainly-ban-checker-theme", next ? "dark" : "light");
+      writeLocalStorage("brainly-ban-checker-theme", next ? "dark" : "light");
       return next;
     });
   }, []);
@@ -48,24 +71,30 @@ export default function BanChecker() {
   }, [isDark]);
 
   useEffect(() => {
-    const savedCountry = window.localStorage.getItem("brainly-ban-checker-country");
-    if (savedCountry && COUNTRIES.some((country) => country.code === savedCountry)) {
-      setSelectedCountry(savedCountry);
-    }
+    const savedCountry = readLocalStorage(COUNTRY_STORAGE_KEY);
+    setSelectedCountry(isSupportedCountry(savedCountry) ? savedCountry : DEFAULT_COUNTRY);
     setCountryPreferenceLoaded(true);
+
+    const handleStorageChange = (event) => {
+      if (event.key !== COUNTRY_STORAGE_KEY) return;
+      setSelectedCountry(isSupportedCountry(event.newValue) ? event.newValue : DEFAULT_COUNTRY);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   useEffect(() => {
     if (countryPreferenceLoaded) {
-      window.localStorage.setItem("brainly-ban-checker-country", selectedCountry);
+      writeLocalStorage(COUNTRY_STORAGE_KEY, isSupportedCountry(selectedCountry) ? selectedCountry : DEFAULT_COUNTRY);
     }
   }, [countryPreferenceLoaded, selectedCountry]);
 
   useEffect(() => {
-    let savedClientId = window.localStorage.getItem("brainly-ban-checker-client-id");
+    let savedClientId = readLocalStorage(CLIENT_ID_STORAGE_KEY);
     if (!savedClientId) {
       savedClientId = window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      window.localStorage.setItem("brainly-ban-checker-client-id", savedClientId);
+      writeLocalStorage(CLIENT_ID_STORAGE_KEY, savedClientId);
     }
     setClientId(savedClientId);
   }, []);
