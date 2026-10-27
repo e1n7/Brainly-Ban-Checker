@@ -2,8 +2,10 @@ import "./globals.css";
 import "goey-toast/styles.css";
 
 export const metadata = {
-  title: "Brainly Ban Checker",
-  description: "Scan Brainly content for potentially flagged words.",
+  title: "Independent Content Checker",
+  description:
+    "An independent tool that compares draft text with selected reference word lists. Results are informational and do not predict moderation decisions.",
+  applicationName: "Independent Content Checker",
 };
 
 export default function RootLayout({ children }) {
