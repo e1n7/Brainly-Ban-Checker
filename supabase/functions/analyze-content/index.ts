@@ -18,6 +18,7 @@ const CONCURRENCY_LEASE_SECONDS = 30;
 const MAX_WORDS_PER_PAGE = 1000;
 const wordCache = new Map<string, { words: string[]; expiresAt: number }>();
 const DEFAULT_ALLOWED_ORIGINS = new Set([
+  "https://brainly-ban-checker.vercel.app",
   "https://3001-ieoh7kkmg0yp1albdiqkc-5e80eff0.sg2.manus.computer",
   "http://localhost:3000",
   "http://localhost:3001",
@@ -94,7 +95,9 @@ async function consumeRateLimit(req: Request) {
 
 function getAllowedOrigins() {
   const configured = Deno.env.get("ALLOWED_ORIGINS")?.split(",").map((origin) => origin.trim()).filter(Boolean);
-  return new Set(configured?.length ? configured : DEFAULT_ALLOWED_ORIGINS);
+  const allowedOrigins = new Set(configured?.length ? configured : DEFAULT_ALLOWED_ORIGINS);
+  allowedOrigins.add("https://brainly-ban-checker.vercel.app");
+  return allowedOrigins;
 }
 
 function getCorsHeaders(req: Request) {
