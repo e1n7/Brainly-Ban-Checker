@@ -1,61 +1,102 @@
-export function analyzeText(text: string, bannedWords: string[]) {
+import safeRegex from "npm:safe-regex2@5.1.2";
+
+const REGEX_FLAGS = "giu";
+const MAX_PATTERN_LENGTH = 256;
+const MAX_REGEX_CACHE_ENTRIES = 5000;
+const regexCache = new Map<string, RegExp | null>();
+
+/**
+ * Analyze text against regex patterns stored in the private ban_words table.
+ * The source profiles use the i, u, and g flags (sometimes in a different order).
+ */
+export function analyzeText(text: string, bannedPatterns: string[]) {
   if (typeof text !== "string" || !text.trim()) {
     return { found: [], highlightedHTML: "" };
   }
 
   const found: { word: string; count: number }[] = [];
-  const lowerText = text.toLocaleLowerCase();
+  const replacements: { start: number; end: number }[] = [];
+  const seenPatterns = new Set<string>();
 
-  for (const rawWord of bannedWords) {
-    const word = typeof rawWord === "string" ? rawWord.trim() : "";
-    const lowerWord = word.toLocaleLowerCase();
-    if (!lowerWord) continue;
+  for (const rawPattern of bannedPatterns) {
+    const pattern = typeof rawPattern === "string" ? rawPattern.trim() : "";
+    if (!pattern || seenPatterns.has(pattern)) continue;
+    seenPatterns.add(pattern);
+
+    const regex = getPatternRegex(pattern);
+    if (!regex) continue;
 
     let count = 0;
-    let searchStart = 0;
-    while ((searchStart = lowerText.indexOf(lowerWord, searchStart)) !== -1) {
-      count += 1;
-      searchStart += lowerWord.length;
+    let firstMatch = "";
+    regex.lastIndex = 0;
+
+    try {
+      let match: RegExpExecArray | null;
+      while ((match = regex.exec(text)) !== null) {
+        if (match[0].length === 0) {
+          regex.lastIndex = match.index + 1;
+          continue;
+        }
+
+        count += 1;
+        if (!firstMatch) firstMatch = match[0];
+        replacements.push({ start: match.index, end: match.index + match[0].length });
+      }
+    } catch {
+      // Malformed or runtime-incompatible patterns are ignored rather than
+      // causing an otherwise valid analysis request to fail.
+      continue;
     }
-    if (count > 0) found.push({ word, count });
+
+    if (count > 0) found.push({ word: firstMatch, count });
   }
 
-  let highlightedHTML = escapeHTML(text).replace(/\r?\n/g, "<br>");
-  if (found.length === 0) return { found, highlightedHTML };
-
-  const replacements: { start: number; end: number; word: string }[] = [];
-  for (const { word } of [...found].sort((a, b) => b.word.length - a.word.length)) {
-    const regex = new RegExp(escapeRegExp(word), "giu");
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      replacements.push({ start: match.index, end: match.index + match[0].length, word: match[0] });
-      if (match[0].length === 0) regex.lastIndex += 1;
-    }
+  if (found.length === 0) {
+    return { found, highlightedHTML: escapeHTML(text).replace(/\r?\n/g, "<br>") };
   }
 
   replacements.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
-  const filtered: { start: number; end: number; word: string }[] = [];
+  const filtered: { start: number; end: number }[] = [];
   for (const replacement of replacements) {
     const overlap = filtered.findIndex((item) => replacement.start < item.end && replacement.end > item.start);
     if (overlap === -1) filtered.push(replacement);
-    else if (replacement.end - replacement.start > filtered[overlap].end - filtered[overlap].start) filtered[overlap] = replacement;
+    else if (replacement.end - replacement.start > filtered[overlap].end - filtered[overlap].start) {
+      filtered[overlap] = replacement;
+    }
   }
 
-  let result = text;
-  for (const replacement of filtered.sort((a, b) => b.start - a.start)) {
-    result = result.slice(0, replacement.start) + "___MARK_START___" + result.slice(replacement.start, replacement.end) + "___MARK_END___" + result.slice(replacement.end);
+  let highlightedHTML = "";
+  let cursor = 0;
+  for (const replacement of filtered.sort((a, b) => a.start - b.start)) {
+    highlightedHTML += escapeHTML(text.slice(cursor, replacement.start)).replace(/\r?\n/g, "<br>");
+    highlightedHTML += `<mark class="highlight">${escapeHTML(text.slice(replacement.start, replacement.end)).replace(/\r?\n/g, "<br>")}</mark>`;
+    cursor = replacement.end;
   }
-
-  highlightedHTML = escapeHTML(result)
-    .replace(/\r?\n/g, "<br>")
-    .replace(/___MARK_START___/g, '<mark class="highlight">')
-    .replace(/___MARK_END___/g, "</mark>");
+  highlightedHTML += escapeHTML(text.slice(cursor)).replace(/\r?\n/g, "<br>");
 
   return { found, highlightedHTML };
 }
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function getPatternRegex(pattern: string): RegExp | null {
+  if (pattern.length > MAX_PATTERN_LENGTH) return null;
+  if (regexCache.has(pattern)) return regexCache.get(pattern) ?? null;
+
+  // These two fixed-width word-boundary assertions are used by the source
+  // profiles. Remove them only for the safety heuristic; retain the original
+  // pattern for actual matching.
+  const safetyCheckPattern = pattern
+    .replace(/\(\?<!\\w\)/g, "")
+    .replace(/\(\?!\\w\)/g, "");
+
+  let regex: RegExp | null = null;
+  try {
+    if (safeRegex(safetyCheckPattern)) regex = new RegExp(pattern, REGEX_FLAGS);
+  } catch {
+    regex = null;
+  }
+
+  if (regexCache.size < MAX_REGEX_CACHE_ENTRIES) regexCache.set(pattern, regex);
+  return regex;
 }
 
 function escapeHTML(value: string) {
