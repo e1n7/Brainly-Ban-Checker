@@ -2,6 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { analyzeText } from "../lib/analyzeText.js";
 
+const LEFT_UNICODE_BOUNDARY = "(?<![\\p{L}\\p{M}\\p{N}_])";
+const RIGHT_UNICODE_BOUNDARY = "(?![\\p{L}\\p{M}\\p{N}_])";
+
+function unicodeBounded(pattern) {
+  return `${LEFT_UNICODE_BOUNDARY}(?:${pattern})${RIGHT_UNICODE_BOUNDARY}`;
+}
+
 test("matches regex rules case-insensitively with word-boundary assertions", () => {
   const result = analyzeText("Bimbo bimbology BIMBO!", ["(?<!\\w)bimbo(?!\\w)"]);
   assert.deepEqual(result.found, [{ word: "Bimbo", count: 2 }]);
@@ -9,6 +16,32 @@ test("matches regex rules case-insensitively with word-boundary assertions", () 
   assert.match(result.highlightedHTML, /<mark class="highlight">Bimbo<\/mark>/);
   assert.match(result.highlightedHTML, /<mark class="highlight">BIMBO<\/mark>/);
   assert.doesNotMatch(result.highlightedHTML, /<mark class="highlight">bimbo<\/mark>logy/);
+});
+
+test("Unicode boundaries reject adjacent letters and combining marks", () => {
+  const result = analyzeText(
+    "BIMBO! ñbimbo bimboñ ăbimbo bimboț n\u0303bimbo bimbo\u0303",
+    [unicodeBounded("bimbo")],
+  );
+  assert.deepEqual(result.found, [{ word: "BIMBO", count: 1 }]);
+  assert.equal((result.highlightedHTML.match(/<mark/g) || []).length, 1);
+});
+
+test("prefilter preserves alternatives, optional patterns, and Unicode case folds", () => {
+  const result = analyzeText("bar bsta boſta!", [
+    unicodeBounded("foo|bar"),
+    unicodeBounded("bo?sta"),
+    unicodeBounded("bosta"),
+  ]);
+  assert.deepEqual(result.found, [
+    { word: "bar", count: 1 },
+    { word: "bsta", count: 2 },
+    { word: "boſta", count: 1 },
+  ]);
+});
+
+test("regex safety checks still reject risky patterns inside Unicode boundaries", () => {
+  assert.deepEqual(analyzeText("aaaa", [unicodeBounded("(a+)+$")]).found, []);
 });
 
 test("continues to match ordinary plain-text patterns", () => {
