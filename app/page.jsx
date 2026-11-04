@@ -145,7 +145,7 @@ export default function BanChecker() {
       <div className="relative z-10 mx-auto min-w-0 max-w-[1500px]">
         <Header isDark={isDark} onToggleTheme={handleToggleTheme} />
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_345px] xl:gap-6">
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_345px] xl:gap-6">
           <main className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-soft backdrop-blur-xl sm:p-6">
             <div className="mb-3 flex items-center gap-2 text-primary">
               <FileText className="h-5 w-5" />
