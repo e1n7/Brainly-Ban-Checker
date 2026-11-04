@@ -9,22 +9,35 @@ function unicodeBounded(pattern) {
   return `${LEFT_UNICODE_BOUNDARY}(?:${pattern})${RIGHT_UNICODE_BOUNDARY}`;
 }
 
-test("matches regex rules case-insensitively with word-boundary assertions", () => {
+test("matches substrings case-insensitively after stripping legacy boundaries", () => {
   const result = analyzeText("Bimbo bimbology BIMBO!", ["(?<!\\w)bimbo(?!\\w)"]);
-  assert.deepEqual(result.found, [{ word: "Bimbo", count: 2 }]);
-  assert.equal((result.highlightedHTML.match(/<mark/g) || []).length, 2);
+  assert.deepEqual(result.found, [{ word: "Bimbo", count: 3 }]);
+  assert.equal((result.highlightedHTML.match(/<mark/g) || []).length, 3);
   assert.match(result.highlightedHTML, /<mark class="highlight">Bimbo<\/mark>/);
+  assert.match(result.highlightedHTML, /<mark class="highlight">bimbo<\/mark>logy/);
   assert.match(result.highlightedHTML, /<mark class="highlight">BIMBO<\/mark>/);
-  assert.doesNotMatch(result.highlightedHTML, /<mark class="highlight">bimbo<\/mark>logy/);
 });
 
-test("Unicode boundaries reject adjacent letters and combining marks", () => {
+test("substring matching accepts Unicode-adjacent letters and combining marks", () => {
   const result = analyzeText(
     "BIMBO! ñbimbo bimboñ ăbimbo bimboț n\u0303bimbo bimbo\u0303",
     [unicodeBounded("bimbo")],
   );
-  assert.deepEqual(result.found, [{ word: "BIMBO", count: 1 }]);
-  assert.equal((result.highlightedHTML.match(/<mark/g) || []).length, 1);
+  assert.deepEqual(result.found, [{ word: "BIMBO", count: 7 }]);
+  assert.equal((result.highlightedHTML.match(/<mark/g) || []).length, 7);
+});
+
+test("matches niga inside ibinigay despite stored Unicode and ASCII boundaries", () => {
+  const lookaroundRule = unicodeBounded("(?<!\\w)niga");
+  const wordBoundaryRule = unicodeBounded("\\bniga");
+  assert.deepEqual(analyzeText("ibinigay", [lookaroundRule]).found, [{ word: "niga", count: 1 }]);
+  assert.deepEqual(analyzeText("ibinigay", [wordBoundaryRule]).found, [{ word: "niga", count: 1 }]);
+});
+
+test("does not strip escaped backslash text or backspace escapes in character classes", () => {
+  const escapedLiteral = unicodeBounded(String.raw`\\bniga`);
+  assert.deepEqual(analyzeText("ibinigay", [escapedLiteral]).found, []);
+  assert.deepEqual(analyzeText("b", [unicodeBounded("[\\b]")]).found, []);
 });
 
 test("prefilter preserves alternatives, optional patterns, and Unicode case folds", () => {
@@ -40,7 +53,7 @@ test("prefilter preserves alternatives, optional patterns, and Unicode case fold
   ]);
 });
 
-test("regex safety checks still reject risky patterns inside Unicode boundaries", () => {
+test("regex safety checks still reject risky patterns after boundaries are stripped", () => {
   assert.deepEqual(analyzeText("aaaa", [unicodeBounded("(a+)+$")]).found, []);
 });
 

@@ -5,12 +5,14 @@ const MAX_PATTERN_LENGTH = 256;
 const MAX_REGEX_CACHE_ENTRIES = 5000;
 const UNICODE_LEFT_BOUNDARY = "(?<![\\p{L}\\p{M}\\p{N}_])";
 const UNICODE_RIGHT_BOUNDARY = "(?![\\p{L}\\p{M}\\p{N}_])";
+const ASCII_LEFT_BOUNDARY = "(?<!\\w)";
+const ASCII_RIGHT_BOUNDARY = "(?!\\w)";
 const regexCache = new Map<string, RegExp | null>();
 const requiredLiteralCache = new Map<string, string | null>();
 
 /**
  * Analyze text against regex patterns stored in the private ban_words table.
- * The source profiles use the i, u, and g flags (sometimes in a different order).
+ * Stored word-boundary assertions are stripped to allow substring matching.
  */
 export function analyzeText(text: string, bannedPatterns: string[]) {
   if (typeof text !== "string" || !text.trim()) {
@@ -88,17 +90,10 @@ function getPatternRegex(pattern: string): RegExp | null {
   if (pattern.length > MAX_PATTERN_LENGTH) return null;
   if (regexCache.has(pattern)) return regexCache.get(pattern) ?? null;
 
-  // Strip only the fixed-width ASCII and Unicode boundary assertions used by
-  // the stored profiles for the safety heuristic; keep them for actual matching.
-  const safetyCheckPattern = pattern
-    .replaceAll(UNICODE_LEFT_BOUNDARY, "")
-    .replaceAll(UNICODE_RIGHT_BOUNDARY, "")
-    .replace(/\(\?<!\\w\)/g, "")
-    .replace(/\(\?!\\w\)/g, "");
-
+  const matchingPattern = stripWordBoundaryAssertions(pattern);
   let regex: RegExp | null = null;
   try {
-    if (safeRegex(safetyCheckPattern)) regex = new RegExp(pattern, REGEX_FLAGS);
+    if (safeRegex(matchingPattern)) regex = new RegExp(matchingPattern, REGEX_FLAGS);
   } catch {
     regex = null;
   }
@@ -110,14 +105,59 @@ function getPatternRegex(pattern: string): RegExp | null {
 function getRequiredLiteral(pattern: string): string | null {
   if (requiredLiteralCache.has(pattern)) return requiredLiteralCache.get(pattern) ?? null;
 
-  const source = pattern
-    .replaceAll(UNICODE_LEFT_BOUNDARY, "")
-    .replaceAll(UNICODE_RIGHT_BOUNDARY, "")
-    .replace(/\(\?<!\\w\)/g, "")
-    .replace(/\(\?!\\w\)/g, "");
+  const source = stripWordBoundaryAssertions(pattern);
   const literal = extractRequiredLiteral(source);
   if (requiredLiteralCache.size < MAX_REGEX_CACHE_ENTRIES) requiredLiteralCache.set(pattern, literal);
   return literal;
+}
+
+/** Remove word-boundary assertions without altering escaped text or character classes. */
+function stripWordBoundaryAssertions(pattern: string): string {
+  let result = "";
+  let inCharacterClass = false;
+
+  for (let index = 0; index < pattern.length;) {
+    if (!inCharacterClass && pattern.startsWith(UNICODE_LEFT_BOUNDARY, index)) {
+      index += UNICODE_LEFT_BOUNDARY.length;
+      continue;
+    }
+    if (!inCharacterClass && pattern.startsWith(UNICODE_RIGHT_BOUNDARY, index)) {
+      index += UNICODE_RIGHT_BOUNDARY.length;
+      continue;
+    }
+    if (!inCharacterClass && pattern.startsWith(ASCII_LEFT_BOUNDARY, index)) {
+      index += ASCII_LEFT_BOUNDARY.length;
+      continue;
+    }
+    if (!inCharacterClass && pattern.startsWith(ASCII_RIGHT_BOUNDARY, index)) {
+      index += ASCII_RIGHT_BOUNDARY.length;
+      continue;
+    }
+
+    const character = pattern[index];
+    if (character === "\\") {
+      const escaped = pattern[index + 1];
+      if (!inCharacterClass && (escaped === "b" || escaped === "B")) {
+        index += 2;
+        continue;
+      }
+      if (escaped !== undefined) {
+        result += pattern.slice(index, index + 2);
+        index += 2;
+      } else {
+        result += character;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (!inCharacterClass && character === "[") inCharacterClass = true;
+    else if (inCharacterClass && character === "]") inCharacterClass = false;
+    result += character;
+    index += 1;
+  }
+
+  return result;
 }
 
 function extractRequiredLiteral(source: string): string | null {
@@ -252,6 +292,6 @@ function normalizeForPrefilter(text: string): string {
   return text.toLowerCase().replaceAll("\u017f", "s").replaceAll("\u212a", "k");
 }
 
-function escapeHTML(value: string) {
+function escapeHTML(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
