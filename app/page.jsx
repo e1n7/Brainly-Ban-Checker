@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Search, RotateCcw, HelpCircle, FileText, Shield, Info, CheckCircle2, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GooeyToaster, gooeyToast } from "goey-toast";
@@ -120,14 +120,13 @@ export default function BanChecker() {
     } catch (error) {
       gooeyToast.error("Analysis failed", { description: error.message || "Unable to analyze content.", showTimestamp: false });
     } finally { setIsAnalyzing(false); }
-  }, [text, selectedCountry, clientId, showToast]);
+  }, [text, selectedCountry, clientId]);
 
   const handleReset = useCallback(() => {
     setText(""); setResult(null); setSymbolSearchResetKey((prev) => prev + 1);
     if (textareaRef.current) textareaRef.current.focus();
   }, []);
 
-  const handlePaste = useCallback(() => {}, []);
   const handleSetSymbolPanelOpen = useCallback((open) => setSymbolPanelOpen(open), []);
   const handleInsertSymbol = useCallback((char) => {
     const ta = textareaRef.current;
@@ -152,7 +151,7 @@ export default function BanChecker() {
               <label htmlFor="inputText" className="text-base font-bold">Your Text</label>
             </div>
             <div className="relative">
-              <textarea ref={textareaRef} id="inputText" value={text} onChange={(e) => setText(e.target.value)} onPaste={handlePaste} maxLength={20000} placeholder="Paste your content here to scan for banned words..." className="min-h-[190px] w-full resize-y rounded-2xl border border-border bg-input/60 p-4 pb-9 text-sm leading-6 text-foreground shadow-inner outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 sm:min-h-[225px] sm:text-base" />
+              <textarea ref={textareaRef} id="inputText" value={text} onChange={(e) => setText(e.target.value)} maxLength={20000} placeholder="Paste your content here to scan for banned words..." className="min-h-[190px] w-full resize-y rounded-2xl border border-border bg-input/60 p-4 pb-9 text-sm leading-6 text-foreground shadow-inner outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 sm:min-h-[225px] sm:text-base" />
               <span className="absolute bottom-3 right-4 text-xs text-muted-foreground">{text.length}/20000</span>
             </div>
 

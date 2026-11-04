@@ -1,19 +1,19 @@
-# Brainly Ban Checker
+# Content Checker
 
-A Next.js app for checking Brainly content against country-specific moderation lists.
+An independent Next.js app for comparing draft text with selected regional reference lists. It is not affiliated with or endorsed by Brainly, and its results are informational rather than moderation decisions.
 
-## Architecture
+## How it works
 
-The browser sends the text and selected country to a Supabase Edge Function. The Edge Function reads the private `ban_words` table, runs the existing checker algorithm, and returns the result. The ban-word list is not included in the browser bundle or this GitHub repository.
+The browser sends the entered text and selected country code to the Supabase `analyze-content` Edge Function. The function reads the private `ban_words` table server-side, evaluates its regex patterns, and returns matched text, occurrence counts, and an escaped highlighted preview. The complete word list is not sent to the browser or stored in this repository.
 
-The result intentionally displays aggregate match counts instead of the private matched words. Highlighted locations are still shown so the checker remains useful without exposing the list. Matching is case-insensitive substring matching, which may flag a term appearing inside a larger word.
+Matching is case-insensitive substring matching. A rule can match inside a longer word, so results can include false positives. The application handler does not write submitted text to an application content table; avoid entering passwords or other sensitive personal information.
 
-## Countries
+## Supported reference lists
 
-- Brainly Philippines (`PH`)
-- Brainly United States (`US`)
-- Brainly Brazil (`BR`)
-- Brainly Romania (`RO`)
+- United States (`US`)
+- Brazil (`BR`)
+- Romania (`RO`)
+- Philippines (`PH`)
 
 ## Local development
 
@@ -22,7 +22,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open <http://localhost:3000>.
 
 ## Production build
 
@@ -33,8 +33,6 @@ npm run start
 
 ## Supabase
 
-The database table is `public.ban_words`. Row-level security is enabled, and public `SELECT` access is revoked. The `analyze-content` Edge Function uses Supabase's server-side service role to read the table.
+The database table is `public.ban_words`. Row-level security is enabled, and public `SELECT` access is revoked. The `analyze-content` Edge Function uses the server-side service role to read the table.
 
-The private word data must never be put back into `data/`, `public/`, a client component, or a `NEXT_PUBLIC_` environment variable.
-
-The public function applies a best-effort per-runtime request limit. Because Edge Function instances are independent, this is not a replacement for provider-level rate limiting.
+The Edge Function also uses database RPCs for request-rate checks and concurrent-request slots. Apply the SQL migrations in `supabase/migrations/` before deploying the function. Never put the private word data in `data/`, `public/`, a client component, or a `NEXT_PUBLIC_` environment variable.

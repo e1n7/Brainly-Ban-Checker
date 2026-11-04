@@ -72,7 +72,6 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
     }
   };
 
-  // FIXED CLICK TOGGLE - Uses explicit stop propagation to prevent state conflicts
   const handleFabClick = useCallback((e) => {
     if (e) {
       e.stopPropagation();
@@ -137,7 +136,6 @@ export default function SymbolPanel({ isOpen, onClose, onInsertSymbol, onShowToa
               />
             </div>
 
-             {/* FIXED MOBILE GRID - Dense 6-column layout makes individual buttons smaller */}
             <div className="p-2 sm:p-3 grid grid-cols-5 gap-2 overflow-y-auto flex-1 content-start">
               {symbols.length > 0 ? (
                 symbols.map((s, i) => (
